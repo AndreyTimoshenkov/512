@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, ContentChildren, HostListener, Input, QueryList } from '@angular/core';
+import { AfterContentInit, Component, ContentChildren, effect, HostListener, Input, QueryList, signal, WritableSignal } from '@angular/core';
 import { GridCellComponent } from '../grid-cell/grid-cell.component';
 
 @Component({
@@ -13,26 +13,27 @@ export class GridRowComponent implements AfterContentInit {
   @Input() rowNumber: number;
   //@ts-ignore
   @ContentChildren(GridCellComponent) cellList: QueryList<GridCellComponent>;
+
+  constructor() {
+    effect(() => {
+      console.log('effect', this.state());
+      if (!this.state().length) {return;}
+      const cellList = this.cellList.toArray();
+      for(let i = 0; i < cellList.length; i++) {
+        cellList[i].value = this.state()[i];
+      }
+    });
+  }
   @HostListener('window:keydown.ArrowLeft', ['$event'])
   left(event: KeyboardEvent) {
     console.log(event.key)
-    for (let i = this.state.length - 1; i > 0; i--) {
-      if (this.state[i].value === this.state[i - 1].value) {
-        this.state[i - 1].value += this.state[i].value;
-        this.state[i].value = 0;
-      }
-    }
+    this.state.update((state) => this.shiftArrayLeft(state));
   }
 
   @HostListener('window:keydown.ArrowRight', ['$event'])
   right(event: KeyboardEvent) {
     console.log(event.key)
-    for (let i = 0; i < this.state.length - 1; i++) {
-      if (this.state[i].value === this.state[i + 1].value) {
-        this.state[i + 1].value += this.state[i].value;
-        this.state[i].value = 0;
-      }
-    }
+    this.state.update((state) => this.shiftArrayRight(state));
   }
 
   @HostListener('window:keydown.ArrowDown', ['$event'])
@@ -45,7 +46,8 @@ export class GridRowComponent implements AfterContentInit {
     console.log(event.key)
   }
 
-  state = new Array;
+  _state = new Array;
+  state: WritableSignal<Array<number>> = signal<Array<number>>(this._state);
 
   private addKeys() {
     let row = this.rowNumber * this.cellList.toArray().length;
@@ -53,9 +55,29 @@ export class GridRowComponent implements AfterContentInit {
   }
   ngAfterContentInit(): void {
     this.addKeys();
-    // this.cellList.forEach(cell => console.log('row', this.rowNumber, 'key', cell.key));
-    this.state = Array.from(this.cellList.toArray());
+    this._state = Array.from(this.cellList.toArray());
+  }
 
+  private shiftArrayRight(list: Array<number>): Array<number> {
+    for (let i = 0; i < list.length - 1; i++) {
+      if ((list[i] && !list[i + 1]) || list[i] === list[i + 1]) {
+        list[i + 1] += list[i];
+        list[i] = 0;
+      }
+    }
+    for (let i = 0; i < list.length - 1; i++) {
+      if (list[i] && !list[i + 1]) {
+        list[i + 1] += list[i];
+        list[i] = 0;
+      }
+    }
+    console.log('shiftArrayRight', list);
+    return list;
+  }
+
+  private shiftArrayLeft(list: Array<number>): Array<number> {
+    console.log('shiftArrayLeft');
+    return this.shiftArrayRight(list).reverse();
   }
 
 }
