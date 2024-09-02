@@ -13,12 +13,14 @@ import { Component, HostBinding, HostListener, Input, OnChanges, SimpleChanges }
 })
 export class GridCellComponent implements OnChanges{
   ngOnChanges(changes: SimpleChanges): void {
-  //  console.log(this.hasValue, this.value)
+  //  console.log(this.value, this.row, this.column)
   }
   //@ts-ignore
   @Input() value: number;
   //@ts-ignore
-  @Input() key: number;
+  @Input() row: number;
+  //@ts-ignore
+  @Input() column: number;
 
   @HostBinding('class.has-value') get hasValue() { return this.value; }
 }

@@ -1,20 +1,18 @@
+<div class="scoreboard">
+  <h1>Turn: {{turn}}</h1>
+  <h1>Turn: {{turn}}</h1>
+</div>
+
 <grid-container>
-  <grid-row
-    [rowNumber]="0"
-  >
-    <grid-cell [value]="1"></grid-cell>
-    <grid-cell [value]="1"></grid-cell>
-    <grid-cell [value]="1"></grid-cell>
-    <grid-cell [value]="1"></grid-cell>
-
-  </grid-row>
-  <!-- <grid-row
-  [rowNumber]="1"
->
-  <grid-cell [value]="1"></grid-cell>
-  <grid-cell></grid-cell>
-  <grid-cell></grid-cell>
-  <grid-cell></grid-cell>
-</grid-row> -->
-
+  @for (row of rows; track $index; let rowIndex = $index;) {
+    <grid-row [rowNumber]="row">
+      @for (value of state(); track $index; let columnIndex = $index;) {
+        <grid-cell
+          [value]="value"
+          [row]="rowIndex"
+          [column]="columnIndex"
+        ></grid-cell>
+      }
+    </grid-row>
+  }
 </grid-container>
