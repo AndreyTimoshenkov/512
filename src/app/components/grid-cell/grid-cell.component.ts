@@ -1,5 +1,6 @@
 import { NgIf } from '@angular/common';
-import { Component, HostBinding, HostListener, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, effect, EventEmitter, HostBinding, HostListener, Input, OnChanges, Output, signal, SimpleChanges, WritableSignal } from '@angular/core';
+import { IGridCellState } from './grid-cell.type';
 
 @Component({
   selector: 'grid-cell',
@@ -8,19 +9,39 @@ import { Component, HostBinding, HostListener, Input, OnChanges, SimpleChanges }
   templateUrl: './grid-cell.component.html',
   styleUrl: './grid-cell.component.less',
   host: {
-    // 'class.has-value':'hasValue'
+    'class.has-value':'hasValue'
   }
 })
-export class GridCellComponent implements OnChanges{
-  ngOnChanges(changes: SimpleChanges): void {
-  //  console.log(this.value, this.row, this.column)
-  }
+export class GridCellComponent implements OnChanges {
+  _cellState: IGridCellState = {value: 0, row: 0, column: 0};
   //@ts-ignore
-  @Input() value: number;
-  //@ts-ignore
-  @Input() row: number;
-  //@ts-ignore
-  @Input() column: number;
+  cellState: WritableSignal<IGridCellState> = signal<IGridCellState>();
 
-  @HostBinding('class.has-value') get hasValue() { return this.value; }
+  constructor(){
+    effect(() => {
+      // console.log('cell effect', this.cellState());
+      this.stateEmitter.emit(this.cellState())
+    });
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    //  console.log({...this._cellState})
+    this.cellState.set({...this._cellState});
+  }
+
+  @Output('gridCellEmitter') stateEmitter: EventEmitter<IGridCellState> = new EventEmitter<IGridCellState>();
+  @Input() set value(value: number) {
+    this._cellState.value = value;
+  };
+
+  get val() {
+    return this._cellState.value;
+  }
+  @Input() set row (value: number) {
+    this._cellState.row = value;
+  };
+  @Input() set column(value: number) {
+    this._cellState.column = value;
+  };
+
+  @HostBinding('class.has-value') get hasValue() { return this.val; }
 }
