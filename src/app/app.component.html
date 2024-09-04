@@ -4,16 +4,7 @@
 </div>
 
 <grid-container>
-  @for (row of rows; track $index; let rowIndex = $index;) {
-    <grid-row [rowNumber]="row">
-      @for (value of state(); track $index; let columnIndex = $index;) {
-        <grid-cell
-          [value]="value"
-          [row]="rowIndex"
-          [column]="columnIndex"
-          (gridCellEmitter)="onGridCellEmit($event)"
-        ></grid-cell>
-      }
-    </grid-row>
+  @for(cell of state(); track $index;) {
+    <grid-cell [cellKey]="cell.key" [cellValue]="cell.value"></grid-cell>
   }
 </grid-container>
