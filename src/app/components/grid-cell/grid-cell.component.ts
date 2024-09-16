@@ -16,18 +16,15 @@ import { IGridCellState } from './grid-cell.type';
 export class GridCellComponent implements OnChanges {
   _cellState: IGridCellState = {key: null, value: 0};
   //@ts-ignore
-  cellState: WritableSignal<IGridCellState> = signal<IGridCellState>();
+  cellState: WritableSignal<IGridCellState> = signal<IGridCellState>(null);
 
   constructor(){
     effect(() => {
-      // console.log('cell effect', this.cellState());
       this.stateEmitter.emit(this.cellState())
     });
   }
   ngOnChanges(changes: SimpleChanges): void {
-    //  console.log({...this._cellState})
     this.cellState.set({...this._cellState});
-    // console.log(this._cellState.key, this._cellState.value)
   }
 
   @Output('gridCellEmitter') stateEmitter: EventEmitter<IGridCellState> = new EventEmitter<IGridCellState>();
