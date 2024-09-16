@@ -3,7 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
 import { IGridCellState } from './components/grid-cell/grid-cell.type';
-import { getRandomArrayEl, shiftArray, splitArray } from './helpers/array.helpers';
+import { getRandomArrayEl, shiftArray, shiftArrayRight, splitArray } from './helpers/array.helpers';
 import { EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
 
@@ -47,13 +47,14 @@ export class AppComponent implements AfterViewInit{
   @HostListener('window:keydown', ['$event'])
     move(event: KeyboardEvent) {
       if (!isDirection(event.code)) { return; }
-      this.state.update((state) => {
-        const split = splitArray(state, event.code as EDirection);
-        split.forEach(list => {
-          shiftArray(list, event.code as EDirection);
-        });
-        return [...split].flat()
-      });
+
+      this.state.update(state => {
+        const split = splitArray(state, EDirection.right);
+        // console.log(...split)
+        split.forEach(row => shiftArrayRight(row));
+        // split.forEach(row => console.log(...row));
+        return state;
+      })
 
       this.generateValues();
     }

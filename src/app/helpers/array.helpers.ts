@@ -6,10 +6,7 @@ export function getRandomArrayEl<T>(array: Array<T>) {
   return array[randomNum];
 }
 
-export function splitArray(
-  state: IGridCellState[],
-  direction: EDirection
-): IGridCellState[][] {
+export function splitArray(state: IGridCellState[], direction: EDirection): IGridCellState[][] {
   const result: IGridCellState[][] = [[], [], [], []];
 
   state.forEach((cell) => {
@@ -26,7 +23,7 @@ export function splitArray(
 export function shiftArray(list: IGridCellState[], direction: EDirection): IGridCellState[] {
   const length = list.length;
 
-  if (direction === EDirection.down || direction === EDirection.right) {
+  if (direction === EDirection.right || direction === EDirection.down) {
     for (let i = 0; i < length - 1; i++) {
       if (
         (list[i].value && !list[i + 1].value) ||
@@ -36,12 +33,12 @@ export function shiftArray(list: IGridCellState[], direction: EDirection): IGrid
         list[i].value = 0;
       }
     }
-    // for (let i = 0; i < length - 1; i++) {
-    //   if (list[i].value && !list[i + 1].value) {
-    //     list[i + 1].value! += list[i].value!;
-    //     list[i].value = 0;
-    //   }
-    // }
+    for (let i = 0; i < length - 1; i++) {
+      if (list[i].value && !list[i + 1].value) {
+        list[i + 1].value! += list[i].value!;
+        list[i].value = 0;
+      }
+    }
   } else if (direction === EDirection.up || direction === EDirection.left) {
     for (let i = length - 1; i > 0; i--) {
       if ((list[i] && !list[i - 1]) || list[i] === list[i - 1]) {
@@ -49,13 +46,28 @@ export function shiftArray(list: IGridCellState[], direction: EDirection): IGrid
         list[i].value = 0;
       }
     }
-    // for (let i = length - 1; i > 0; i--) {
-    //   if (list[i].value && !list[i - 1].value) {
-    //     list[i - 1].value = list[i].value;
-    //     list[i].value = 0;
-    //   }
-    // }
+    for (let i = length - 1; i > 0; i--) {
+      if (list[i].value && !list[i - 1].value) {
+        list[i - 1].value = list[i].value;
+        list[i].value = 0;
+      }
+    }
   }
+  return list;
+}
 
+export function shiftArrayRight(list: IGridCellState[]) {
+  for (let i = list.length - 1; i > 0; i--) {
+    if ((!list[i].value && list[i - 1].value) || list[i].value === list[i - 1].value) {
+      list[i].value! += list[i - 1].value!;
+      list[i - 1].value = 0;
+    }
+  }
+  for (let i = list.length - 1; i > 0; i--) {
+    if ((!list[i] && list[i - 1]) || list[i] === list[i - 1]) {
+      list[i].value! += list[i - 1].value!;
+      list[i - 1].value = 0;
+    }
+  }
   return list;
 }
