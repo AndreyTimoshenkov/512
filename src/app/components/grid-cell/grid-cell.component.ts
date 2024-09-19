@@ -12,6 +12,7 @@ import { EGridCellColor, IGridCellState, TGridCellColor, THexColor } from './gri
   host: {
     '[style.--cell-bcg]': 'bcg$$()',
     '[style.--cell-color]': 'cellColor$$()',
+    '[style.--cell-font-size]': 'cellFontSize$$()',
   }
 })
 export class GridCellComponent implements OnChanges {
@@ -20,7 +21,7 @@ export class GridCellComponent implements OnChanges {
   cellState: WritableSignal<IGridCellState> = signal<IGridCellState>(null);
   bcg$$: WritableSignal<TGridCellColor> = signal<TGridCellColor>(EGridCellColor.regular);
   cellColor$$: WritableSignal<TGridCellColor> = signal<TGridCellColor>(EGridCellColor.grey);
-
+  cellFontSize$$: WritableSignal<string> = signal<string>('50px');
 
   constructor(){
     effect(() => {
@@ -33,6 +34,8 @@ export class GridCellComponent implements OnChanges {
 
   @Input() set value(value: number) {
     this._cellState.value = value;
+    const size = value < 100 ? '50px' : '40px';
+    this.cellFontSize$$.set(size);
   };
 
   get val() {

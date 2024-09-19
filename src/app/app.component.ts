@@ -1,11 +1,12 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, OnInit, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
 import { IGridCellState } from './components/grid-cell/grid-cell.type';
-import { getRandomArrayEl, shiftArray, shiftArrayRight, splitArray } from './helpers/array.helpers';
+import { getRandomArrayEl, shiftArray, splitArray } from './helpers/array.helpers';
 import { EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
+import { LocalStorageService } from './services/local-storage.service';
 
 @Component({
   selector: 'app-root',
@@ -15,19 +16,21 @@ import { isDirection } from './helpers/event.helpers';
   styleUrl: './app.component.less',
   // changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent implements AfterViewInit{
-  title = '512';
+export class AppComponent implements AfterViewInit, OnInit{
   state: WritableSignal<Array<IGridCellState>> = signal([]);
   turn: number = 0;
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
   constructor(
-    // private cdr: ChangeDetectorRef
+    // private cdr: ChangeDetectorRef,
+    private ls: LocalStorageService,
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
 
       const state = this.state();
+
+      this.ls.saveState(state);
 
       for (const cell of state) {
         this.cellList.forEach(item => {
@@ -40,11 +43,21 @@ export class AppComponent implements AfterViewInit{
       const emptyCells = this.getEmptyCells(state);
 
       if (!emptyCells.length) { alert('GAME OVER!!'); return; }
+      this.turn++;
+
     });
   }
+  ngOnInit(): void {
+    console.log('oninit')
+    // this.state.set(this.ls.getState());
+  }
+
   ngAfterViewInit(): void {
+    // this.state.update(() => this.ls.getState() || []);
+    // console.log(this.ls.getState());
+
     this.generateKeys();
-    this.generateValues();
+    this.generateValues(2);
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -63,6 +76,7 @@ export class AppComponent implements AfterViewInit{
       })
 
       this.generateValues();
+
     }
 
   // onGridCellEmit(state: IGridCellState) {
@@ -75,23 +89,23 @@ export class AppComponent implements AfterViewInit{
     }
   }
 
-  generateValues() {
-    const state = this.state();
-    const emptyCells = this.getEmptyCells(state);
+  generateValues(times: number = 1) {
+    while(times > 0) {
+      const state = this.state();
+      const emptyCells = this.getEmptyCells(state);
 
-    if (!emptyCells.length) { return; }
+      if (!emptyCells.length) { return; }
 
-    const randomCell = getRandomArrayEl(emptyCells);
-    state.forEach(cell => {
-      if (cell.key === randomCell.key) {
-        cell.value = 2;
-        cell.new = true;
-      }
-    });
-    this.turn++;
-    if (this.turn === 1) { this.generateValues(); }
-    this.state.update(() => [...state]);
-    // this.cdr.detectChanges();
+      const randomCell = getRandomArrayEl(emptyCells);
+      state.forEach(cell => {
+        if (cell.key === randomCell.key) {
+          cell.value = 2;
+          cell.new = true;
+        }
+      });
+      times--;
+      this.state.update(() => [...state]);
+   }
   }
 
   getEmptyCells(state: IGridCellState[]): IGridCellState[] {
@@ -103,5 +117,17 @@ export class AppComponent implements AfterViewInit{
       state.forEach(cell => cell.new = false);
       return [...state];
     })
+  }
+
+  startGame() {
+    this.state.set([]);
+    this.generateKeys();
+    this.generateValues(2);
+    this.turn = 0;
+  }
+
+  restartGame() {
+    this.ls.clear();
+    this.startGame();
   }
 }

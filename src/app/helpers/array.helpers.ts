@@ -40,6 +40,12 @@ export function shiftArray(list: IGridCellState[], direction: EDirection): IGrid
         list[i].value = 0;
       }
     }
+    for (let i = 0; i < length - 1; i++) {
+      if (list[i].value && !list[i + 1].value) {
+        list[i + 1].value! += list[i].value!;
+        list[i].value = 0;
+      }
+    }
   } else if (direction === EDirection.up || direction === EDirection.left) {
     for (let i = length - 1; i > 0; i--) {
       if ((list[i].value && !list[i - 1].value) || list[i].value === list[i - 1].value) {
@@ -53,23 +59,13 @@ export function shiftArray(list: IGridCellState[], direction: EDirection): IGrid
         list[i].value = 0;
       }
     }
+    for (let i = list.length - 1; i > 0; i--) {
+      if (list[i].value && !list[i - 1].value) {
+        list[i - 1].value = list[i].value;
+        list[i].value = 0;
+      }
+    }
     return list;
-  }
-  return list;
-}
-
-export function shiftArrayRight(list: IGridCellState[]) {
-  for (let i = list.length - 1; i > 0; i--) {
-    if ((!list[i].value && list[i - 1].value) || list[i].value === list[i - 1].value) {
-      list[i].value! += list[i - 1].value!;
-      list[i - 1].value = 0;
-    }
-  }
-  for (let i = list.length - 1; i > 0; i--) {
-    if ((!list[i] && list[i - 1]) || list[i] === list[i - 1]) {
-      list[i].value! += list[i - 1].value!;
-      list[i - 1].value = 0;
-    }
   }
   return list;
 }
