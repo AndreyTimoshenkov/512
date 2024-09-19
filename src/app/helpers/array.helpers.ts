@@ -21,6 +21,7 @@ export function splitArray(state: IGridCellState[], direction: EDirection): IGri
 }
 
 export function shiftArray(list: IGridCellState[], direction: EDirection): IGridCellState[] {
+  // console.log(...list, direction);
   const length = list.length;
 
   if (direction === EDirection.right || direction === EDirection.down) {
@@ -41,17 +42,18 @@ export function shiftArray(list: IGridCellState[], direction: EDirection): IGrid
     }
   } else if (direction === EDirection.up || direction === EDirection.left) {
     for (let i = length - 1; i > 0; i--) {
-      if ((list[i] && !list[i - 1]) || list[i] === list[i - 1]) {
+      if ((list[i].value && !list[i - 1].value) || list[i].value === list[i - 1].value) {
         list[i - 1].value! += list[i].value!;
         list[i].value = 0;
       }
     }
-    for (let i = length - 1; i > 0; i--) {
+    for (let i = list.length - 1; i > 0; i--) {
       if (list[i].value && !list[i - 1].value) {
         list[i - 1].value = list[i].value;
         list[i].value = 0;
       }
     }
+    return list;
   }
   return list;
 }

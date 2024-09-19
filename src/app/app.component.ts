@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -21,7 +21,9 @@ export class AppComponent implements AfterViewInit{
   turn: number = 0;
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
-  constructor() {
+  constructor(
+    // private cdr: ChangeDetectorRef
+  ) {
     effect(() => {
       if (!this.cellList.length) { return; }
 
@@ -30,13 +32,14 @@ export class AppComponent implements AfterViewInit{
       for (const cell of state) {
         this.cellList.forEach(item => {
           if (item._cellState.key === cell.key) {
-            item._cellState.value = cell.value
+            item._cellState.value = cell.value;
+            item._cellState.new = cell.new;
           }
         })
       }
       const emptyCells = this.getEmptyCells(state);
 
-      if (!emptyCells.length) { console.log('GAME OVER!!'); return; }
+      if (!emptyCells.length) { alert('GAME OVER!!'); return; }
     });
   }
   ngAfterViewInit(): void {
@@ -46,26 +49,29 @@ export class AppComponent implements AfterViewInit{
 
   @HostListener('window:keydown', ['$event'])
     move(event: KeyboardEvent) {
-      if (!isDirection(event.code)) { return; }
+
+      const direction = event.code as EDirection;
+
+      if (!isDirection(direction)) { return; }
+
+      this.toggleCellsOld();
 
       this.state.update(state => {
-        const split = splitArray(state, EDirection.right);
-        // console.log(...split)
-        split.forEach(row => shiftArrayRight(row));
-        // split.forEach(row => console.log(...row));
+        const split = splitArray(state, direction);
+        split.forEach(row => shiftArray(row, direction));
         return state;
       })
 
       this.generateValues();
     }
 
-  onGridCellEmit(state: IGridCellState) {
-    // console.log(state);
-  }
+  // onGridCellEmit(state: IGridCellState) {
+  //   // console.log(state);
+  // }
 
   generateKeys(width: number = 4, height: number = 4) {
     for (let i = 0; i < width*height; i++){
-      this.state.update((state) => [...state, {key: i, value: 0}]);
+      this.state.update((state) => [...state, {key: i, value: 0, new: false}]);
     }
   }
 
@@ -79,14 +85,23 @@ export class AppComponent implements AfterViewInit{
     state.forEach(cell => {
       if (cell.key === randomCell.key) {
         cell.value = 2;
+        cell.new = true;
       }
     });
     this.turn++;
     if (this.turn === 1) { this.generateValues(); }
     this.state.update(() => [...state]);
+    // this.cdr.detectChanges();
   }
 
   getEmptyCells(state: IGridCellState[]): IGridCellState[] {
     return state.filter(cell => !cell.value);
+  }
+
+  toggleCellsOld() {
+    this.state.update(state => {
+      state.forEach(cell => cell.new = false);
+      return [...state];
+    })
   }
 }

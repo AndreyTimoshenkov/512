@@ -1,6 +1,6 @@
 import { NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, EventEmitter, HostBinding, HostListener, Input, OnChanges, Output, signal, SimpleChanges, WritableSignal } from '@angular/core';
-import { IGridCellState } from './grid-cell.type';
+import { EGridCellColor, IGridCellState, TGridCellColor, THexColor } from './grid-cell.type';
 
 @Component({
   selector: 'grid-cell',
@@ -10,22 +10,24 @@ import { IGridCellState } from './grid-cell.type';
   styleUrl: './grid-cell.component.less',
   // changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    'class.value':'hasValue'
+    '[style.--cell-bcg]': 'bcg$$()',
+    '[style.--cell-color]': 'cellColor$$()',
   }
 })
 export class GridCellComponent implements OnChanges {
   _cellState: IGridCellState = {key: null, value: 0};
   //@ts-ignore
   cellState: WritableSignal<IGridCellState> = signal<IGridCellState>(null);
+  bcg$$: WritableSignal<TGridCellColor> = signal<TGridCellColor>(EGridCellColor.regular);
+  cellColor$$: WritableSignal<TGridCellColor> = signal<TGridCellColor>(EGridCellColor.grey);
+
 
   constructor(){
     effect(() => {
       this.stateEmitter.emit(this.cellState())
     });
   }
-  ngOnChanges(changes: SimpleChanges): void {
-    this.cellState.set({...this._cellState});
-  }
+  ngOnChanges(changes: SimpleChanges): void {}
 
   @Output('gridCellEmitter') stateEmitter: EventEmitter<IGridCellState> = new EventEmitter<IGridCellState>();
 
@@ -39,6 +41,14 @@ export class GridCellComponent implements OnChanges {
 
   @Input('cellKey') set key(value: number) {
     this._cellState.key = value;
+  }
+
+  @Input('cellNew') set _isNew(value: boolean) {
+    this._cellState.new = value;
+    const bcg: THexColor = value ? '#97ba1e' : '#808080';;
+    this.bcg$$.set(bcg);
+    const color: THexColor = value ? /*'#ffa500'*/ '#ffffff' : '#ffffff';
+    this.cellColor$$.set(color);
   }
 
   @HostBinding('class.has-value') get hasValue() { return !!this.val; }

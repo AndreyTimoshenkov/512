@@ -5,6 +5,6 @@
 
 <grid-container>
   @for(cell of state(); track $index;) {
-    <grid-cell [cellKey]="cell.key" [cellValue]="cell.value"></grid-cell>
+    <grid-cell [cellKey]="cell.key" [cellValue]="cell.value" [cellNew]="cell.new"></grid-cell>
   }
 </grid-container>
