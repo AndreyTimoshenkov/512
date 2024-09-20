@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, QueryList, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -22,7 +22,7 @@ export class AppComponent implements AfterViewInit{
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
   constructor(
-    // private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef,
     private ls: LocalStorageService,
     private shift: ShiftService,
   ) {
@@ -44,8 +44,14 @@ export class AppComponent implements AfterViewInit{
 
       this.ls.saveTurn(this.turn$$());
 
-      const emptyCells = this.getEmptyCells(state);
-      if (!emptyCells.length) { alert('GAME OVER!!'); return; }
+      setTimeout(() => {
+        this.cdr.detectChanges();
+
+        return !this.hasEmptyCells(this.cellList).length
+          ? alert('GAME OVER!!')
+          : null;
+      }, 0);
+
     });
   }
 
@@ -102,6 +108,10 @@ export class AppComponent implements AfterViewInit{
 
   getEmptyCells(state: IGridCellState[]): IGridCellState[] {
     return state.filter(cell => !cell.value);
+  }
+
+  hasEmptyCells(list: GridCellComponent[]): GridCellComponent[] {
+    return list.filter(cell => !cell._cellState.value)
   }
 
   toggleCellsOld() {

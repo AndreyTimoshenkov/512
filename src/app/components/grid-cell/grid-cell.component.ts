@@ -1,5 +1,5 @@
 import { NgIf } from '@angular/common';
-import { ChangeDetectionStrategy, Component, effect, EventEmitter, HostBinding, HostListener, Input, OnChanges, Output, signal, SimpleChanges, WritableSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, EventEmitter, HostBinding, Input, OnChanges, Output, signal, SimpleChanges, WritableSignal } from '@angular/core';
 import { EGridCellColor, IGridCellState, TGridCellColor, THexColor } from './grid-cell.type';
 
 @Component({

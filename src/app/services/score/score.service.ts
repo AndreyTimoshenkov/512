@@ -16,7 +16,7 @@ export class ScoreService {
     const sum = cell1.value + cell2.value;
 
     this.score$$.update((score) => score += sum);
-    console.log(cell1.value, cell2.value, this.score$$());
+    // console.log(cell1.value, cell2.value, this.score$$());
   }
 
   resetScore() {
