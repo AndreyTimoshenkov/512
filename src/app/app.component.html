@@ -1,11 +1,15 @@
 <div class="scoreboard">
   <h1>Turn: {{ turn$$() }}</h1>
-  <h1>Score: 6256</h1>
+  <h1>Score: {{ score$$() }}</h1>
    <button (click)="restartGame()">New game</button>
 </div>
 
-<grid-container>
+<grid-container class="game">
   @for(cell of state$$(); track $index;) {
     <grid-cell [cellKey]="cell.key" [cellValue]="cell.value" [cellNew]="cell.new"></grid-cell>
   }
 </grid-container>
+
+<div class="rules">
+  How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!
+</div>

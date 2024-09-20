@@ -1,15 +1,11 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { IGridCellState } from '../../components/grid-cell/grid-cell.type';
 import { EDirection } from '../../interfaces/general.types';
-import { ScoreService } from '../score/score.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ShiftService {
-
-  scoreService = inject(ScoreService);
-  // score$$ = this.scoreService.score$$;
 
   getRandomArrayEl<T>(array: Array<T>) {
     const randomNum = Math.floor(Math.random() * array.length);
@@ -30,15 +26,17 @@ export class ShiftService {
     return result;
   }
 
-  shiftArray(list: IGridCellState[], direction: EDirection): IGridCellState[] {
+  shiftArray(list: IGridCellState[], direction: EDirection): [IGridCellState[], number] {
    const length = list.length;
+   let score = 0;
    if (direction === EDirection.right || direction === EDirection.down) {
+
      for (let i = 0; i < length - 1; i++) {
        if (
          (list[i].value && !list[i + 1].value) || (list[i].value === list[i + 1].value)
        ) {
+         score += this.mergeCells(list[i + 1], list[i])
          list[i + 1].value += list[i].value;
-         this.scoreService.mergeCells(list[i + 1], list[i]);
          list[i].value = 0;
        }
      }
@@ -55,10 +53,10 @@ export class ShiftService {
        }
      }
    } else if (direction === EDirection.up || direction === EDirection.left) {
-     for (let i = length - 1; i > 0; i--) {
+      for (let i = length - 1; i > 0; i--) {
        if ((list[i].value && !list[i - 1].value) || list[i].value === list[i - 1].value) {
+         score += this.mergeCells(list[i - 1], list[i])
          list[i - 1].value += list[i].value;
-         this.scoreService.mergeCells(list[i - 1], list[i]);
          list[i].value = 0;
        }
      }
@@ -75,6 +73,14 @@ export class ShiftService {
        }
      }
    }
-   return list;
+   return [list, score];
+  }
+
+  mergeCells(cell1: IGridCellState, cell2: IGridCellState): number {
+    if (cell1.value === 0 || cell2.value === 0) { return 0; }
+
+    if (cell1.value !== cell2.value) { return 0; }
+
+    return cell1.value + cell2.value;
   }
 }

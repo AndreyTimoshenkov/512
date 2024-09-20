@@ -36,4 +36,16 @@ export class LocalStorageService {
 
     return turn ? JSON.parse(turn) : 1;
   }
+
+  saveScore(score: number) {
+    this._window.localStorage?.setItem('score', JSON.stringify(score));
+  }
+
+  getScore() {
+    const score = this._window.localStorage?.getItem('score');
+
+    console.log(score);
+
+    return score ? JSON.parse(score) : 0;
+  }
 }

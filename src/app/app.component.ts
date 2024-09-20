@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, QueryList, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -19,6 +19,8 @@ import { ShiftService } from './services/shift/shift.service';
 export class AppComponent implements AfterViewInit{
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
+  score$$: WritableSignal<number> = signal(0);
+
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
   constructor(
@@ -43,6 +45,7 @@ export class AppComponent implements AfterViewInit{
       }
 
       this.ls.saveTurn(this.turn$$());
+      this.ls.saveScore(this.score$$());
 
       setTimeout(() => {
         this.cdr.detectChanges();
@@ -70,7 +73,10 @@ export class AppComponent implements AfterViewInit{
 
       this.state$$.update(state => {
         const split = this.shift.splitArray(state, direction);
-        split.forEach(row => this.shift.shiftArray(row, direction));
+        split.forEach(row => {
+          const [state, score] = this.shift.shiftArray(row, direction);
+          this.score$$.update(prevScore => prevScore + score);
+        });
         return state;
       });
 
@@ -125,16 +131,21 @@ export class AppComponent implements AfterViewInit{
     const state = this.ls.getState();
     this.state$$.set(this.ls.getState());
     this.turn$$.set(this.ls.getTurn());
+    this.score$$.set(this.ls.getScore());
 
     if (!state.length) {
       this.generateKeys();
       this.generateValues(2);
       this.turn$$.set(1);
+      this.score$$.set(0);
     }
   }
 
   restartGame() {
-    this.ls.clear();
-    this.startGame();
+    const confirmed = confirm('Are you sure you want to start a new game? All progress will be lost')
+    if (confirmed) {
+      this.ls.clear();
+      this.startGame();
+    }
   }
 }
