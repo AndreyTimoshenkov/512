@@ -1,13 +1,11 @@
 import { inject, Injectable } from '@angular/core';
-import { IGridCellState } from '../components/grid-cell/grid-cell.type';
+import { IGridCellState } from '../../components/grid-cell/grid-cell.type';
 import { WINDOW } from './injection-tokens';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LocalStorageService {
-
-  constructor() { }
   private readonly _window = inject(WINDOW);
 
   saveState(state: Array<IGridCellState>) {
@@ -27,5 +25,15 @@ export class LocalStorageService {
   clear(): void {
     if (!this.getState()) { return; }
     this._window.localStorage?.clear();
+  }
+
+  saveTurn(turn: number) {
+    this._window.localStorage?.setItem('turn', JSON.stringify(turn));
+  }
+
+  getTurn(): number {
+    const turn = this._window.localStorage?.getItem('turn');
+
+    return turn ? JSON.parse(turn) : 1;
   }
 }

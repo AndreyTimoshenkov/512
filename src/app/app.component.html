@@ -1,11 +1,11 @@
 <div class="scoreboard">
-  <h1>Turn: {{turn}}</h1>
-  <!-- <h1>Turn: {{turn}}</h1> -->
+  <h1>Turn: {{ turn$$() }}</h1>
+  <h1>Score: 6256</h1>
    <button (click)="restartGame()">New game</button>
 </div>
 
 <grid-container>
-  @for(cell of state(); track $index;) {
+  @for(cell of state$$(); track $index;) {
     <grid-cell [cellKey]="cell.key" [cellValue]="cell.value" [cellNew]="cell.new"></grid-cell>
   }
 </grid-container>

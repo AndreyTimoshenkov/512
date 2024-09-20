@@ -1,6 +1,6 @@
 export interface IGridCellState{
-  value: number | null;
-  key: number | null;
+  value: number;
+  key: number;
   new?: boolean | null;
 }
 

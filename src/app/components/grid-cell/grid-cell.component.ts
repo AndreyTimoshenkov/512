@@ -16,7 +16,7 @@ import { EGridCellColor, IGridCellState, TGridCellColor, THexColor } from './gri
   }
 })
 export class GridCellComponent implements OnChanges {
-  _cellState: IGridCellState = {key: null, value: 0};
+  _cellState: IGridCellState = {key: 0, value: 0};
   //@ts-ignore
   cellState: WritableSignal<IGridCellState> = signal<IGridCellState>(null);
   bcg$$: WritableSignal<TGridCellColor> = signal<TGridCellColor>(EGridCellColor.regular);
