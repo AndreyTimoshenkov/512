@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, OnInit, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -16,7 +16,7 @@ import { LocalStorageService } from './services/local-storage.service';
   styleUrl: './app.component.less',
   // changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent implements AfterViewInit, OnInit{
+export class AppComponent implements AfterViewInit{
   state: WritableSignal<Array<IGridCellState>> = signal([]);
   turn: number = 0;
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
@@ -40,24 +40,16 @@ export class AppComponent implements AfterViewInit, OnInit{
           }
         })
       }
-      const emptyCells = this.getEmptyCells(state);
 
+      const emptyCells = this.getEmptyCells(state);
       if (!emptyCells.length) { alert('GAME OVER!!'); return; }
       this.turn++;
 
     });
   }
-  ngOnInit(): void {
-    console.log('oninit')
-    // this.state.set(this.ls.getState());
-  }
 
   ngAfterViewInit(): void {
-    // this.state.update(() => this.ls.getState() || []);
-    // console.log(this.ls.getState());
-
-    this.generateKeys();
-    this.generateValues(2);
+    this.startGame();
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -79,14 +71,12 @@ export class AppComponent implements AfterViewInit, OnInit{
 
     }
 
-  // onGridCellEmit(state: IGridCellState) {
-  //   // console.log(state);
-  // }
-
   generateKeys(width: number = 4, height: number = 4) {
+    const state: IGridCellState[] = [];
     for (let i = 0; i < width*height; i++){
-      this.state.update((state) => [...state, {key: i, value: 0, new: false}]);
+      state.push({key: i, value: 0, new: false});
     }
+    this.state.set(state);
   }
 
   generateValues(times: number = 1) {
@@ -120,10 +110,16 @@ export class AppComponent implements AfterViewInit, OnInit{
   }
 
   startGame() {
-    this.state.set([]);
-    this.generateKeys();
-    this.generateValues(2);
-    this.turn = 0;
+    const state = this.ls.getState();
+
+    if (state.length) {
+      this.state.set(this.ls.getState())
+    } else {
+      this.state.set([]);
+      this.generateKeys();
+      this.generateValues(2);
+      this.turn = 0;
+    }
   }
 
   restartGame() {

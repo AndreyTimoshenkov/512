@@ -13,6 +13,8 @@ export class LocalStorageService {
   saveState(state: Array<IGridCellState>) {
     if (!state.length) { return; }
 
+    this.clear();
+
     this._window.localStorage?.setItem('state', JSON.stringify(state));
   }
 
@@ -23,6 +25,7 @@ export class LocalStorageService {
   }
 
   clear(): void {
-    this._window.localStorage.clear();
+    if (!this.getState()) { return; }
+    this._window.localStorage?.clear();
   }
 }
