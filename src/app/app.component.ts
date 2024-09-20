@@ -7,11 +7,12 @@ import { EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
+import { KeyboardComponent } from './components/keyboard/keyboard/keyboard.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, GridContainerComponent, GridCellComponent],
+  imports: [RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
   // changeDetection: ChangeDetectionStrategy.OnPush,

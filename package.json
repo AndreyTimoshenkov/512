@@ -4,10 +4,11 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --output-path docs --base-href '' && mv docs/browser/index.csr.html docs/browser/index.html",
+    "deploy": "npx angular-cli-ghpages --dir=docs/browser",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:512": "node dist/512/server/server.mjs"
+    "serve:ssr:512": "node docs/server/server.mjs"
   },
   "private": true,
   "dependencies": {

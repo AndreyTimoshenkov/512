@@ -44,8 +44,6 @@ export class LocalStorageService {
   getScore() {
     const score = this._window.localStorage?.getItem('score');
 
-    console.log(score);
-
     return score ? JSON.parse(score) : 0;
   }
 }
