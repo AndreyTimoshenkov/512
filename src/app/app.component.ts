@@ -54,7 +54,6 @@ export class AppComponent implements AfterViewInit{
           ? alert('GAME OVER!!')
           : null;
       }, 0);
-
     });
   }
 
@@ -77,14 +76,12 @@ export class AppComponent implements AfterViewInit{
         });
 
         if (!isEqual(prevState, state)) {
-          this.generateValues();
           this.toggleCellsOld();
+          this.generateValues();
           this.turn$$.update(turn => turn += 1);
         }
         return state;
       });
-
-
     }
 
   generateKeys(width: number = 4, height: number = 4) {
@@ -131,11 +128,12 @@ export class AppComponent implements AfterViewInit{
 
   startGame() {
     const state = this.ls.getState();
-    this.state$$.set(this.ls.getState());
-    this.turn$$.set(this.ls.getTurn());
-    this.score$$.set(this.ls.getScore());
 
-    if (!state.length) {
+    if (state.length) {
+      this.state$$.set(this.ls.getState());
+      this.turn$$.set(this.ls.getTurn());
+      this.score$$.set(this.ls.getScore());
+    } else {
       this.generateKeys();
       this.generateValues(2);
       this.turn$$.set(1);
