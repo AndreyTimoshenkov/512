@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -7,6 +7,7 @@ import { EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
+import { cloneDeep, isEqual } from 'lodash';
 
 @Component({
   selector: 'app-root',
@@ -14,7 +15,6 @@ import { ShiftService } from './services/shift/shift.service';
   imports: [RouterOutlet, GridContainerComponent, GridCellComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
-  // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements AfterViewInit{
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
@@ -64,25 +64,27 @@ export class AppComponent implements AfterViewInit{
 
   @HostListener('window:keydown', ['$event'])
     move(event: KeyboardEvent) {
-
       const direction = event.code as EDirection;
 
       if (!isDirection(direction)) { return; }
 
-      this.toggleCellsOld();
-
       this.state$$.update(state => {
+        const prevState = cloneDeep(state)
         const split = this.shift.splitArray(state, direction);
         split.forEach(row => {
-          const [state, score] = this.shift.shiftArray(row, direction);
+          const [newState, score] = this.shift.shiftArray(row, direction);
           this.score$$.update(prevScore => prevScore + score);
         });
+
+        if (!isEqual(prevState, state)) {
+          this.generateValues();
+          this.toggleCellsOld();
+          this.turn$$.update(turn => turn += 1);
+        }
         return state;
       });
 
-      this.turn$$.update(turn => turn += 1);
 
-      this.generateValues();
     }
 
   generateKeys(width: number = 4, height: number = 4) {
