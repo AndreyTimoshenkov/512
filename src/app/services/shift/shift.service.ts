@@ -26,61 +26,42 @@ export class ShiftService {
     return result;
   }
 
+  //@ts-ignore
   shiftArray(list: IGridCellState[], direction: EDirection): [IGridCellState[], number] {
-   const length = list.length;
-   let score = 0;
    if (direction === EDirection.right || direction === EDirection.down) {
-
-     for (let i = 0; i < length - 1; i++) {
-       if (
-         (list[i].value && !list[i + 1].value) || (list[i].value === list[i + 1].value)
-       ) {
-         score += this.mergeCells(list[i + 1], list[i])
-         list[i + 1].value += list[i].value;
-         list[i].value = 0;
-       }
-     }
-     for (let i = 0; i < length - 1; i++) {
-       if (list[i].value && !list[i + 1].value) {
-         list[i + 1].value = list[i].value;
-         list[i].value = 0;
-       }
-     }
-     for (let i = 0; i < length - 1; i++) {
-       if (list[i].value && !list[i + 1].value) {
-         list[i + 1].value = list[i].value;
-         list[i].value = 0;
-       }
-     }
+    return this.shiftRight(...this.shiftRight(...this.shiftRight(list)))
    } else if (direction === EDirection.up || direction === EDirection.left) {
-      for (let i = length - 1; i > 0; i--) {
-       if ((list[i].value && !list[i - 1].value) || list[i].value === list[i - 1].value) {
-         score += this.mergeCells(list[i - 1], list[i])
-         list[i - 1].value += list[i].value;
-         list[i].value = 0;
-       }
-     }
-     for (let i = list.length - 1; i > 0; i--) {
-       if (list[i].value && !list[i - 1].value) {
-         list[i - 1].value = list[i].value;
-         list[i].value = 0;
-       }
-     }
-     for (let i = list.length - 1; i > 0; i--) {
-       if (list[i].value && !list[i - 1].value) {
-         list[i - 1].value = list[i].value;
-         list[i].value = 0;
-       }
-     }
+    return this.shiftLeft(...this.shiftLeft(...this.shiftLeft(list)));
    }
-   return [list, score];
   }
 
-  mergeCells(cell1: IGridCellState, cell2: IGridCellState): number {
-    if (cell1.value === 0 || cell2.value === 0) { return 0; }
+  shiftRight(nums: IGridCellState[], score: number = 0): [IGridCellState[], number] {
+    let index = nums.length - 1;
+    while (index) {
+      if (nums[index].value === nums[index - 1].value || !nums[index].value) {
+        if (nums[index - 1].value + nums[index].value && nums[index].value) {
+          score = (nums[index - 1].value + nums[index].value);
+        }
+        nums[index].value += nums[index - 1].value;
+        nums[index - 1].value = 0;
+      }
+      index -= 1;
+    }
+    return [nums, score];
+  }
 
-    if (cell1.value !== cell2.value) { return 0; }
-
-    return cell1.value + cell2.value;
+  shiftLeft(nums: IGridCellState[], score: number = 0): [IGridCellState[], number] {
+    let index = 0;
+    while (index < nums.length - 1) {
+      if (nums[index].value === nums[index + 1].value || !nums[index].value) {
+        if (nums[index + 1].value === nums[index].value && nums[index].value) {
+          score = (nums[index + 1].value + nums[index].value);
+        }
+        nums[index].value += nums[index + 1].value;
+        nums[index + 1].value = 0;
+      }
+      index += 1;
+    }
+    return [nums, score];
   }
 }
