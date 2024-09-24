@@ -1,6 +1,8 @@
 <div class="scoreboard">
-  <h1>Turn: {{ turn$$() }}</h1>
-  <h1>Score: {{ score$$() }}</h1>
+  <div class="scoreboard_text">
+    <p>Turn: {{ turn$$() }}</p>
+    <p>Score: {{ score$$() }}</p>
+  </div>
    <button (click)="restartGame()">New game</button>
 </div>
 
@@ -10,7 +12,7 @@
   }
 </grid-container>
 
-<ng-container *ngIf="isMobile$$()">
+<ng-container *ngIf="isMobile$$() || isTablet$$()">
   <app-keyboard (keyboardClick)="onKeyboardClick($event)"></app-keyboard>
 </ng-container>
 

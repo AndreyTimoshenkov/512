@@ -28,7 +28,9 @@ export class GridCellComponent implements OnChanges {
       this.stateEmitter.emit(this.cellState())
     });
   }
-  ngOnChanges(changes: SimpleChanges): void {}
+  ngOnChanges(changes: SimpleChanges): void {
+    // console.log(this.cellFontSize$$())
+  }
 
   @Output('gridCellEmitter') stateEmitter: EventEmitter<IGridCellState> = new EventEmitter<IGridCellState>();
 

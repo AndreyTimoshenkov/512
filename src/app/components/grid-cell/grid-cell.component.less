@@ -9,8 +9,29 @@
   background-color: var(--cell-bcg);
   color: var(--cell-color);
   transition: 500ms;
+
+  @media (min-width: 600px) and (max-width: 959.98px) {
+    width: 75px;
+    height: 75px;
+    font-size: 37.5px;
+  }
+
+  @media (max-width: 599.98px) {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
 }
   .value {
-    font-size: var(--cell-font-size);
+    // font-size: var(--cell-font-size);
+    font-size: 50px;
     margin: 0;
+
+    @media (min-width: 600px) and (max-width: 959.98px) {
+      font-size: 40px;
+    }
+
+    @media (max-width: 599.98px) {
+      font-size: 32px;
+    }
 }

@@ -6,12 +6,47 @@
   flex-direction: column;
 }
 
-.scoreboard{
+.scoreboard {
   margin-top: 100px;
   display: flex;
   gap: 1rem;
   color: gray;
   align-items: center;
+
+  @media (min-width: 600px) and (max-width: 959.98px) {
+    width: 316px;
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 599.98px) {
+    width: 216px;
+    flex-direction: column-reverse;
+    gap: 0;
+  }
+
+  &_text {
+    display: flex;
+    gap: 1rem;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    p {
+      margin: 0;
+    }
+
+    @media (min-width: 600px) and (max-width: 959.98px) {
+      font-size: 25px;
+      font-weight: 600;
+      margin: 0.5rem;
+    }
+
+    @media (max-width: 599.98px) {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0.5rem;
+    }
+  }
 }
 
 button {
@@ -19,11 +54,17 @@ button {
   font-weight: 600;
   color: #808080;
   padding: 5px;
-  height: fit-content;
 
-  :hover {
+  :active {
     color: #97ba1e;
   }
+
+  // @media (min-width: 600px) and (max-width: 959.98px) {
+  //   margin-bottom: 0.5rem;
+  // }
+  // @media (max-width: 599.98px) {
+  //   margin-bottom: 0.25rem;
+  // }
 }
 
 .rules {
@@ -31,4 +72,14 @@ button {
   width: 420px;
   color: #808080;
   font-size: larger;
+
+  @media (min-width: 600px) and (max-width: 959.98px) {
+    width: 316px;
+    font-size: large;
+  }
+
+  @media (max-width: 599.98px) {
+    width: 216px;
+    font-size: medium;
+  }
 }

@@ -27,6 +27,7 @@ export class AppComponent implements AfterViewInit{
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
+  isTablet$$ = signal(false);
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -64,10 +65,13 @@ export class AppComponent implements AfterViewInit{
       }, 0);
     });
     //@ts-ignore
-    this.isMobile$$ = toSignal(this.breakPointObserver.observe(
-      Breakpoints.Small).pipe(
+    this.isMobile$$ = toSignal(this.breakPointObserver.observe(Breakpoints.XSmall).pipe(
         map((state: BreakpointState) => state.matches)
-      ));
+    ));
+    //@ts-ignore
+    this.isTablet$$ = toSignal(this.breakPointObserver.observe(Breakpoints.Small).pipe(
+      map((state: BreakpointState) => state.matches)
+  ));
   }
 
   ngAfterViewInit(): void {
