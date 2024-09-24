@@ -29,7 +29,7 @@ export class AppComponent implements AfterViewInit{
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
   isTablet$$ = signal(false);
-  hasBeenContinued: boolean = false;
+  hasBeenContinued$$: WritableSignal<boolean> = signal(false);
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -66,10 +66,10 @@ export class AppComponent implements AfterViewInit{
           const confirmed = confirm('Game OVER! Would you like to play again?')
           confirmed ? this.restartGame() : null;
         }
-        if (this.game.isGameWon(state) && !this.hasBeenContinued) {
+        if (this.game.isGameWon(state) && !this.hasBeenContinued$$()) {
           const confirmed = confirm('YOU WON! You have reached the goal! \nWould you like to continue playing or would you like to start a new game?')
-          confirmed ? this.restartGame() : null;
-          this.hasBeenContinued = true;
+          confirmed ? this.restartGame() : this.hasBeenContinued$$.set(true);;
+
         }
 
       }, 0);
