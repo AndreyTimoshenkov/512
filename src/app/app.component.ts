@@ -14,11 +14,12 @@ import { NgIf } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
+import { ColourDirective } from './directives/colour.directive';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf],
+  imports: [RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf, ColourDirective],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
 })
@@ -48,7 +49,6 @@ export class AppComponent implements AfterViewInit{
         this.cellList.forEach(item => {
           if (item._cellState.key === cell.key) {
             item._cellState.value = cell.value;
-            item._cellState.new = cell.new;
           }
         })
       }
@@ -93,7 +93,6 @@ export class AppComponent implements AfterViewInit{
         });
 
         if (!isEqual(prevState, state)) {
-          this.toggleCellsOld();
           this.generateValues();
           this.turn$$.update(turn => turn += 1);
         }
@@ -104,7 +103,7 @@ export class AppComponent implements AfterViewInit{
   generateKeys(width: number = 4, height: number = 4) {
     const state: IGridCellState[] = [];
     for (let i = 0; i < width*height; i++){
-      state.push({key: i, value: 0, new: false});
+      state.push({key: i, value: 0});
     }
     this.state$$.set(state);
   }
@@ -120,7 +119,6 @@ export class AppComponent implements AfterViewInit{
       state.forEach(cell => {
         if (cell.key === randomCell.key) {
           cell.value = 2;
-          cell.new = true;
         }
       });
       times--;
@@ -134,13 +132,6 @@ export class AppComponent implements AfterViewInit{
 
   hasEmptyCells(list: GridCellComponent[]): GridCellComponent[] {
     return list.filter(cell => !cell._cellState.value)
-  }
-
-  toggleCellsOld() {
-    this.state$$.update(state => {
-      state.forEach(cell => cell.new = false);
-      return [...state];
-    })
   }
 
   startGame() {
@@ -167,8 +158,6 @@ export class AppComponent implements AfterViewInit{
   }
 
   onKeyboardClick(direction: EDirection) {
-    this.toggleCellsOld();
-
     this.state$$.update(state => {
       const split = this.shift.splitArray(state, direction);
       split.forEach(row => {

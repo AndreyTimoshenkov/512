@@ -8,10 +8,9 @@
 
 <grid-container class="game">
   @for(cell of state$$(); track $index;) {
-    <grid-cell [cellKey]="cell.key" [cellValue]="cell.value" [cellNew]="cell.new"></grid-cell>
+    <grid-cell bcgColour [bcg]="cell.value" [cellKey]="cell.key" [cellValue]="cell.value" ></grid-cell>
   }
 </grid-container>
-
 <ng-container *ngIf="isMobile$$() || isTablet$$()">
   <app-keyboard (keyboardClick)="onKeyboardClick($event)"></app-keyboard>
 </ng-container>
