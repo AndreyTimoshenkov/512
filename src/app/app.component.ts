@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -8,11 +8,16 @@ import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
 import { KeyboardComponent } from './components/keyboard/keyboard/keyboard.component';
+import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
+import { Breakpoints } from './services/breakpoint-observer/breakpoints';
+import { NgIf } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent],
+  imports: [RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
   // changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +26,7 @@ export class AppComponent implements AfterViewInit{
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
+  isMobile$$ = signal(false);
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -28,6 +34,7 @@ export class AppComponent implements AfterViewInit{
     private cdr: ChangeDetectorRef,
     private ls: LocalStorageService,
     private shift: ShiftService,
+    private breakPointObserver: BreakpointObserver,
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
@@ -57,6 +64,11 @@ export class AppComponent implements AfterViewInit{
       }, 0);
 
     });
+    //@ts-ignore
+    this.isMobile$$ = toSignal(this.breakPointObserver.observe(
+      Breakpoints.Small).pipe(
+        map((state: BreakpointState) => state.matches)
+      ));
   }
 
   ngAfterViewInit(): void {
@@ -148,5 +160,22 @@ export class AppComponent implements AfterViewInit{
       this.ls.clear();
       this.startGame();
     }
+  }
+
+  onKeyboardClick(direction: EDirection) {
+    this.toggleCellsOld();
+
+    this.state$$.update(state => {
+      const split = this.shift.splitArray(state, direction);
+      split.forEach(row => {
+        const [state, score] = this.shift.shiftArray(row, direction);
+        this.score$$.update(prevScore => prevScore + score);
+      });
+      return state;
+    });
+
+    this.turn$$.update(turn => turn += 1);
+
+    this.generateValues();
   }
 }

@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
+import { EDirection } from '../../../interfaces/general.types';
 
 @Component({
   selector: 'app-keyboard',
@@ -8,5 +9,21 @@ import { Component } from '@angular/core';
   styleUrl: './keyboard.component.less'
 })
 export class KeyboardComponent {
+  @Output() keyboardClick = new EventEmitter<EDirection>();
 
+  onLeftClick() {
+    this.keyboardClick.emit(EDirection.left);
+  }
+
+  onRightClick() {
+    this.keyboardClick.emit(EDirection.right);
+  }
+
+  onUpClick() {
+    this.keyboardClick.emit(EDirection.up);
+  }
+
+  onDownClick() {
+    this.keyboardClick.emit(EDirection.down);
+  }
 }
