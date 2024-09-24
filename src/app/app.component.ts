@@ -7,12 +7,18 @@ import { EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
+import { KeyboardComponent } from './components/keyboard/keyboard/keyboard.component';
+import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
+import { Breakpoints } from './services/breakpoint-observer/breakpoints';
+import { NgIf } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { map } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, GridContainerComponent, GridCellComponent],
+  imports: [RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
 })
@@ -20,6 +26,7 @@ export class AppComponent implements AfterViewInit{
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
+  isMobile$$ = signal(false);
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -27,6 +34,7 @@ export class AppComponent implements AfterViewInit{
     private cdr: ChangeDetectorRef,
     private ls: LocalStorageService,
     private shift: ShiftService,
+    private breakPointObserver: BreakpointObserver,
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
@@ -55,6 +63,11 @@ export class AppComponent implements AfterViewInit{
           : null;
       }, 0);
     });
+    //@ts-ignore
+    this.isMobile$$ = toSignal(this.breakPointObserver.observe(
+      Breakpoints.Small).pipe(
+        map((state: BreakpointState) => state.matches)
+      ));
   }
 
   ngAfterViewInit(): void {
@@ -147,5 +160,22 @@ export class AppComponent implements AfterViewInit{
       this.ls.clear();
       this.startGame();
     }
+  }
+
+  onKeyboardClick(direction: EDirection) {
+    this.toggleCellsOld();
+
+    this.state$$.update(state => {
+      const split = this.shift.splitArray(state, direction);
+      split.forEach(row => {
+        const [state, score] = this.shift.shiftArray(row, direction);
+        this.score$$.update(prevScore => prevScore + score);
+      });
+      return state;
+    });
+
+    this.turn$$.update(turn => turn += 1);
+
+    this.generateValues();
   }
 }
