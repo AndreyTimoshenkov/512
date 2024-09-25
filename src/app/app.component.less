@@ -7,19 +7,22 @@
 }
 
 .scoreboard {
-  // margin-top: 100px;
+  margin-top: 50px;
   display: flex;
   gap: 1rem;
   color: gray;
   align-items: center;
+  text-wrap: nowrap;
 
   @media (min-width: 600px) and (max-width: 959.98px) {
+    margin-top: 20px;
     width: 316px;
     flex-direction: column-reverse;
     gap: 0.5rem;
   }
 
   @media (max-width: 599.98px) {
+    margin-top: 10px;
     width: 216px;
     flex-direction: column-reverse;
     gap: 0;
