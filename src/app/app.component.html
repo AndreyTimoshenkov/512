@@ -11,7 +11,7 @@
     <grid-cell bcgColour [bcg]="cell.value" [cellKey]="cell.key" [cellValue]="cell.value" ></grid-cell>
   }
 </grid-container>
-<ng-container *ngIf="isMobile$$() || isTablet$$()">
+<ng-container *ngIf="isMobile$$()">
   <app-keyboard (keyboardClick)="onKeyboardClick($event)"></app-keyboard>
 </ng-container>
 

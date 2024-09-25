@@ -9,7 +9,6 @@ import { LocalStorageService } from './services/local-storage/local-storage.serv
 import { ShiftService } from './services/shift/shift.service';
 import { KeyboardComponent } from './components/keyboard/keyboard/keyboard.component';
 import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
-import { Breakpoints } from './services/breakpoint-observer/breakpoints';
 import { NgIf } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
@@ -28,7 +27,6 @@ export class AppComponent implements AfterViewInit{
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
-  isTablet$$ = signal(false);
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -65,13 +63,9 @@ export class AppComponent implements AfterViewInit{
       }, 0);
     });
     //@ts-ignore
-    this.isMobile$$ = toSignal(this.breakPointObserver.observe(Breakpoints.XSmall).pipe(
+    this.isMobile$$ = toSignal(this.breakPointObserver.observe('(max-width: 959.98px)').pipe(
         map((state: BreakpointState) => state.matches)
     ));
-    //@ts-ignore
-    this.isTablet$$ = toSignal(this.breakPointObserver.observe(Breakpoints.Small).pipe(
-      map((state: BreakpointState) => state.matches)
-  ));
   }
 
   ngAfterViewInit(): void {
