@@ -41,7 +41,6 @@ export class AppComponent implements OnInit{
   ngOnInit(): void {
     const turn = this.ls.getTurn();
     this.turn$$.set(turn);
-    // this.shift
   }
 
   @HostListener('window:keydown', ['$event'])

@@ -7,7 +7,7 @@ import { EDirection } from '../../interfaces/general.types';
 })
 export class ShiftService {
 
-  increment$$ = signal(0);
+  score$$ = signal(0);
 
   getEmptyCells(state: IGridCellState[]): IGridCellState[] {
     return state.filter(cell => !cell.value);
@@ -28,40 +28,43 @@ export class ShiftService {
           : Math.floor((cell.key ?? 0) % 4);
       result[index].push(cell);
     });
-
     return result;
   }
 
-  //@ts-ignore
-  shiftArray(list: IGridCellState[], direction: EDirection): [IGridCellState[], number] {
+  shiftArray(list: IGridCellState[], direction: EDirection): IGridCellState[] {
    if (direction === EDirection.right || direction === EDirection.down) {
-    return this.shiftRight(...this.shiftRight(...this.shiftRight(list)))
+    return this.shiftRight(list);
    } else if (direction === EDirection.up || direction === EDirection.left) {
-    return this.shiftLeft(...this.shiftLeft(...this.shiftLeft(list)));
+    return this.shiftLeft(list);
    }
+   return list;
   }
 
-  shiftRight(nums: IGridCellState[], score: number = 0): [IGridCellState[], number] {
-    let index = nums.length - 1;
-    while (index) {
-      if (nums[index].value === nums[index - 1].value || !nums[index].value) {
-        nums[index].value += nums[index - 1].value;
-        nums[index - 1].value = 0;
+  shiftRight(nums: IGridCellState[]): IGridCellState[] {
+    let count = nums.length;
+    while (count) {
+      for (let index = nums.length - 1; index > 0; index--) {
+        if (nums[index].value === nums[index - 1].value || !nums[index].value) {
+          nums[index].value += nums[index - 1].value;
+          nums[index - 1].value = 0;
+        }
       }
-      index -= 1;
+      count--;
     }
-    return [nums, score];
+    return nums;
   }
 
-  shiftLeft(nums: IGridCellState[], score: number = 0): [IGridCellState[], number] {
-    let index = 0;
-    while (index < nums.length - 1) {
-      if (nums[index].value === nums[index + 1].value || !nums[index].value) {
-        nums[index].value += nums[index + 1].value;
-        nums[index + 1].value = 0;
+  shiftLeft(nums: IGridCellState[]): IGridCellState[] {
+    let count = 0;
+    while (count < nums.length) {
+      for (let index = 0; index < nums.length - 1; index++) {
+        if (nums[index].value === nums[index + 1].value || !nums[index].value) {
+          nums[index].value += nums[index + 1].value;
+          nums[index + 1].value = 0;
+        }
       }
-      index += 1;
+      count += 1;
     }
-    return [nums, score];
+    return nums;
   }
 }
