@@ -27,4 +27,14 @@ export class GameService {
   isGameWon(state: IGridCellState[]) {
     return state.some(cell => cell.value === 512);
   }
+
+  hasMove(state: IGridCellState[]): boolean {
+    for (let i = 0; i < state.length; i++) {
+      return state[i].value === state[i + 4]?.value
+        || state[i].value === state[i - 4]?.value
+        || state[i].value === state[i + 1]?.value
+        || state[i].value === state[i - 1]?.value
+    }
+    return true;
+  }
 }

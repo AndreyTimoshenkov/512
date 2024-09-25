@@ -1,4 +1,4 @@
-import { Component, computed, HostListener, OnInit, signal, ViewChild, WritableSignal } from '@angular/core';
+import { Component, effect, HostListener, OnInit, signal, ViewChild, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -34,10 +34,14 @@ export class AppComponent implements OnInit{
     this.isMobile$$ = toSignal(this.breakPointObserver.observe('(max-width: 959.98px)').pipe(
         map((state: BreakpointState) => state.matches)
     ));
+    effect(() => {
+      this.ls.saveTurn(this.turn$$());
+    })
   }
   ngOnInit(): void {
     const turn = this.ls.getTurn();
     this.turn$$.set(turn);
+    // this.shift
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -49,6 +53,7 @@ export class AppComponent implements OnInit{
 
   restartGame() {
     this.container.restartGame();
+    this.turn$$.set(1);
   }
 
   onKeyboardClick(direction: EDirection) {
@@ -56,10 +61,6 @@ export class AppComponent implements OnInit{
   }
 
   updateTurn() {
-    this.turn$$.update(turn => {
-      turn++;
-      this.ls.saveTurn(turn);
-      return turn;
-    });
+    this.turn$$.update(turn => turn += 1);
   }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, effect, EventEmitter, OnInit, Output, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { Component, effect, EventEmitter, OnInit, Output, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { GridCellComponent } from '../grid-cell/grid-cell.component';
 import { IGridCellState } from '../grid-cell/grid-cell.type';
 import { LocalStorageService } from '../../services/local-storage/local-storage.service';
@@ -6,7 +6,7 @@ import { ShiftService } from '../../services/shift/shift.service';
 import { EDirection } from '../../interfaces/general.types';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from '../../directives/colour.directive';
-
+import { GameService } from '../../services/game/game.service';
 @Component({
   selector: 'grid-container',
   standalone: true,
@@ -16,20 +16,24 @@ import { ColourDirective } from '../../directives/colour.directive';
 })
 export class GridContainerComponent implements OnInit {
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
-  // turn$$ = signal(0);
+  hasConfirmed = false;
   @Output() turn = new EventEmitter<number>();
+  @Output() score = new EventEmitter<number>();
+
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
   constructor(
     private ls: LocalStorageService,
-    private cdr: ChangeDetectorRef,
     private shift: ShiftService,
+    private game: GameService,
 
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
 
-      const state = this.state$$();
+      let state = this.state$$();
+
+      if (!state.length) { return; }
 
       this.ls.saveState(state);
 
@@ -49,11 +53,9 @@ export class GridContainerComponent implements OnInit {
   move(direction: EDirection) {
 
     this.state$$.update(state => {
-      const prevState = cloneDeep(state)
+      const prevState = cloneDeep(state);
       const split = this.shift.splitArray(state, direction);
-      split.forEach(row => {
-        const [newState, score] = this.shift.shiftArray(row, direction);
-      });
+      split.forEach(row => this.shift.shiftArray(row, direction));
 
       if (!isEqual(prevState, state)) {
         this.generateValues();
@@ -61,10 +63,6 @@ export class GridContainerComponent implements OnInit {
       }
       return state;
     });
-  }
-
-  getEmptyCells(state: IGridCellState[]): IGridCellState[] {
-    return state.filter(cell => !cell.value);
   }
 
   generateKeys(width: number = 4, height: number = 4) {
@@ -78,7 +76,7 @@ export class GridContainerComponent implements OnInit {
   generateValues(times: number = 1) {
     while(times > 0) {
       const state = this.state$$();
-      const emptyCells = this.getEmptyCells(state);
+      const emptyCells = this.shift.getEmptyCells(state);
 
       if (!emptyCells.length) { return; }
 
