@@ -14,7 +14,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from './directives/colour.directive';
-import { GameService } from './services/game/game.service';
 
 @Component({
   selector: 'app-root',
@@ -28,7 +27,6 @@ export class AppComponent implements AfterViewInit{
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
-  hasBeenContinued$$: WritableSignal<boolean> = signal(false);
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -37,7 +35,6 @@ export class AppComponent implements AfterViewInit{
     private ls: LocalStorageService,
     private shift: ShiftService,
     private breakPointObserver: BreakpointObserver,
-    private game: GameService,
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
@@ -60,16 +57,9 @@ export class AppComponent implements AfterViewInit{
       setTimeout(() => {
         this.cdr.detectChanges();
 
-        if (this.game.isGameOver(state)) {
-          const confirmed = confirm('Game OVER! Would you like to play again?')
-          confirmed ? this.restartGame() : null;
-        }
-        if (this.game.isGameWon(state) && !this.hasBeenContinued$$()) {
-          const confirmed = confirm('YOU WON! You have reached the goal! \nWould you like to continue playing or would you like to start a new game?')
-          confirmed ? this.restartGame() : this.hasBeenContinued$$.set(true);;
-
-        }
-
+        return !this.hasEmptyCells(this.cellList).length
+          ? alert('GAME OVER!!')
+          : null;
       }, 0);
     });
     //@ts-ignore
@@ -92,7 +82,8 @@ export class AppComponent implements AfterViewInit{
         const prevState = cloneDeep(state)
         const split = this.shift.splitArray(state, direction);
         split.forEach(row => {
-          const newState = this.shift.shiftArray(row, direction);
+          const [newState, score] = this.shift.shiftArray(row, direction);
+          this.score$$.update(prevScore => prevScore + score);
         });
 
         if (!isEqual(prevState, state)) {
@@ -164,7 +155,8 @@ export class AppComponent implements AfterViewInit{
     this.state$$.update(state => {
       const split = this.shift.splitArray(state, direction);
       split.forEach(row => {
-        const state= this.shift.shiftArray(row, direction);
+        const [state, score] = this.shift.shiftArray(row, direction);
+        this.score$$.update(prevScore => prevScore + score);
       });
       return state;
     });
