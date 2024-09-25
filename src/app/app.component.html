@@ -6,7 +6,7 @@
    <button (click)="restartGame()">New game</button>
 </div>
 
-<grid-container class="game"></grid-container>
+<grid-container class="game" (turn)="updateTurn()"></grid-container>
 <ng-container *ngIf="isMobile$$()">
   <app-keyboard (keyboardClick)="onKeyboardClick($event)"></app-keyboard>
 </ng-container>

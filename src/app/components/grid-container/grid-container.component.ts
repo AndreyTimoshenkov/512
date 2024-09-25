@@ -1,10 +1,9 @@
-import { ChangeDetectorRef, Component, ContentChildren, effect, OnInit, signal, ViewChild, ViewChildren, WritableSignal } from '@angular/core';
+import { ChangeDetectorRef, Component, effect, EventEmitter, OnInit, Output, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { GridCellComponent } from '../grid-cell/grid-cell.component';
 import { IGridCellState } from '../grid-cell/grid-cell.type';
 import { LocalStorageService } from '../../services/local-storage/local-storage.service';
 import { ShiftService } from '../../services/shift/shift.service';
 import { EDirection } from '../../interfaces/general.types';
-import { isDirection } from '../../helpers/event.helpers';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from '../../directives/colour.directive';
 
@@ -17,6 +16,8 @@ import { ColourDirective } from '../../directives/colour.directive';
 })
 export class GridContainerComponent implements OnInit {
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
+  // turn$$ = signal(0);
+  @Output() turn = new EventEmitter<number>();
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
   constructor(
@@ -39,17 +40,9 @@ export class GridContainerComponent implements OnInit {
           }
         })
       }
-
-      setTimeout(() => {
-        this.cdr.detectChanges();
-
-        return !this.hasEmptyCells(this.cellList).length
-          ? alert('GAME OVER!!')
-          : null;
-      }, 0);
     });
   }
-  ngOnInit(): void {
+  ngOnInit() {
     this.startGame();
   }
 
@@ -64,13 +57,10 @@ export class GridContainerComponent implements OnInit {
 
       if (!isEqual(prevState, state)) {
         this.generateValues();
+        this.turn.emit();
       }
       return state;
     });
-  }
-
-  hasEmptyCells(list: GridCellComponent[]): GridCellComponent[] {
-    return list.filter(cell => !cell._cellState.value)
   }
 
   getEmptyCells(state: IGridCellState[]): IGridCellState[] {

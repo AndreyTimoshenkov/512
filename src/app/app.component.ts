@@ -1,4 +1,4 @@
-import { Component, HostListener, signal, ViewChild, WritableSignal } from '@angular/core';
+import { Component, computed, HostListener, OnInit, signal, ViewChild, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -18,7 +18,7 @@ import { map } from 'rxjs';
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
 })
-export class AppComponent {
+export class AppComponent implements OnInit{
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
@@ -35,12 +35,16 @@ export class AppComponent {
         map((state: BreakpointState) => state.matches)
     ));
   }
+  ngOnInit(): void {
+    const turn = this.ls.getTurn();
+    this.turn$$.set(turn);
+  }
 
   @HostListener('window:keydown', ['$event'])
     move(event: KeyboardEvent) {
       const direction = event.code as EDirection;
       if (!isDirection(direction)) { return; }
-      this.container.move(direction)
+      this.container.move(direction);
     }
 
   restartGame() {
@@ -49,5 +53,13 @@ export class AppComponent {
 
   onKeyboardClick(direction: EDirection) {
     this.container.move(direction);
+  }
+
+  updateTurn() {
+    this.turn$$.update(turn => {
+      turn++;
+      this.ls.saveTurn(turn);
+      return turn;
+    });
   }
 }

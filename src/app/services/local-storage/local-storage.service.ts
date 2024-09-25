@@ -10,19 +10,15 @@ export class LocalStorageService {
 
   saveState(state: Array<IGridCellState>) {
     if (!state.length) { return; }
-
-    this.clear();
-
     this._window.localStorage?.setItem('state', JSON.stringify(state));
   }
 
   getState(): Array<IGridCellState> {
     const state = this._window.localStorage?.getItem('state');
-
     return state ? JSON.parse(state) : [];
   }
 
-  clear(): void {
+  clear() {
     if (!this.getState()) { return; }
     this._window.localStorage?.clear();
   }
@@ -33,7 +29,6 @@ export class LocalStorageService {
 
   getTurn(): number {
     const turn = this._window.localStorage?.getItem('turn');
-
     return turn ? JSON.parse(turn) : 1;
   }
 
@@ -41,9 +36,8 @@ export class LocalStorageService {
     this._window.localStorage?.setItem('score', JSON.stringify(score));
   }
 
-  getScore() {
+  getScore(): number {
     const score = this._window.localStorage?.getItem('score');
-
     return score ? JSON.parse(score) : 0;
   }
 }
