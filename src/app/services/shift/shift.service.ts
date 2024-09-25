@@ -27,41 +27,39 @@ export class ShiftService {
   }
 
   //@ts-ignore
-  shiftArray(list: IGridCellState[], direction: EDirection): [IGridCellState[], number] {
+  shiftArray(list: IGridCellState[], direction: EDirection): IGridCellState[] {
    if (direction === EDirection.right || direction === EDirection.down) {
-    return this.shiftRight(...this.shiftRight(...this.shiftRight(list)))
+    return this.shiftRight(this.shiftRight(this.shiftRight(list)))
    } else if (direction === EDirection.up || direction === EDirection.left) {
-    return this.shiftLeft(...this.shiftLeft(...this.shiftLeft(list)));
+    return this.shiftLeft(this.shiftLeft(this.shiftLeft(list)));
    }
   }
 
-  shiftRight(nums: IGridCellState[], score: number = 0): [IGridCellState[], number] {
+  shiftRight(nums: IGridCellState[]): IGridCellState[] {
     let index = nums.length - 1;
     while (index) {
       if (nums[index].value === nums[index - 1].value || !nums[index].value) {
         if (nums[index - 1].value + nums[index].value && nums[index].value) {
-          score = (nums[index - 1].value + nums[index].value);
         }
         nums[index].value += nums[index - 1].value;
         nums[index - 1].value = 0;
       }
       index -= 1;
     }
-    return [nums, score];
+    return nums;
   }
 
-  shiftLeft(nums: IGridCellState[], score: number = 0): [IGridCellState[], number] {
+  shiftLeft(nums: IGridCellState[]): IGridCellState[] {
     let index = 0;
     while (index < nums.length - 1) {
       if (nums[index].value === nums[index + 1].value || !nums[index].value) {
         if (nums[index + 1].value === nums[index].value && nums[index].value) {
-          score = (nums[index + 1].value + nums[index].value);
         }
         nums[index].value += nums[index + 1].value;
         nums[index + 1].value = 0;
       }
       index += 1;
     }
-    return [nums, score];
+    return nums;
   }
 }
