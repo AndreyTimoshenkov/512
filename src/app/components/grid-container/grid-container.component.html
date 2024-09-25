@@ -1,1 +1,8 @@
-<ng-content select="grid-cell"></ng-content>
+@for(cell of state$$(); track $index;) {
+  <grid-cell
+    bcgColour
+    [bcg]="cell.value"
+    [cellKey]="cell.key"
+    [cellValue]="cell.value"
+  ></grid-cell>
+}

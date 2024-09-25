@@ -6,11 +6,7 @@
    <button (click)="restartGame()">New game</button>
 </div>
 
-<grid-container class="game">
-  @for(cell of state$$(); track $index;) {
-    <grid-cell bcgColour [bcg]="cell.value" [cellKey]="cell.key" [cellValue]="cell.value" ></grid-cell>
-  }
-</grid-container>
+<grid-container class="game"></grid-container>
 <ng-container *ngIf="isMobile$$()">
   <app-keyboard (keyboardClick)="onKeyboardClick($event)"></app-keyboard>
 </ng-container>

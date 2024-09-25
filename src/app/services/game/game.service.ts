@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { IGridCellState } from '../../components/grid-cell/grid-cell.type';
 import { ShiftService } from '../shift/shift.service';
 import { EDirection } from '../../interfaces/general.types';
-import { ceil, cloneDeep, isEqual } from 'lodash';
+import { cloneDeep, isEqual } from 'lodash';
 
 @Injectable({
   providedIn: 'root'
