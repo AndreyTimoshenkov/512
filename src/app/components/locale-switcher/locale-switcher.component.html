@@ -1,0 +1,5 @@
+<select id="options" [(ngModel)]="selectedOption" class="dropdown">
+  @for (option of options; track $index) {
+    <option>{{option}}</option>
+  }
+</select>
