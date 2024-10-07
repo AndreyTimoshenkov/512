@@ -14,11 +14,16 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from './directives/colour.directive';
+import { environment } from '../environments/environment';
+import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf, ColourDirective],
+  imports: [
+    RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf,
+    ColourDirective, LocaleSwitcherComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
 })
@@ -27,6 +32,7 @@ export class AppComponent implements AfterViewInit{
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
+  options = ['RU', 'EN'];
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -69,6 +75,7 @@ export class AppComponent implements AfterViewInit{
   }
 
   ngAfterViewInit(): void {
+    console.log(environment.locale);
     this.startGame();
   }
 
