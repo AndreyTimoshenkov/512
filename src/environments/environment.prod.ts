@@ -1,4 +1,7 @@
-export const environment = {
+import { ESupportedLocale } from "../app/components/locale-switcher/locale.types";
+import { IEnvironment } from "./environment.interface";
+
+export const environment: IEnvironment = {
   production: true,
-  locale: 'en-US'
+  locale: ESupportedLocale.EN,
 };

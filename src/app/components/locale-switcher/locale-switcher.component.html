@@ -1,5 +1,7 @@
-<select id="options" [(ngModel)]="selectedOption" class="dropdown">
-  @for (option of options; track $index) {
-    <option>{{option}}</option>
-  }
-</select>
+<form [formGroup]="form">
+  <select id="options" class="dropdown" formControlName="localeControl">
+    @for (option of options | keyvalue; track option.key) {
+      <option [value]="option.key">{{option.key}}</option>
+    }
+  </select>
+</form>

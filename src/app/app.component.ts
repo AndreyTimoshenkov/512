@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -14,7 +14,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from './directives/colour.directive';
-import { environment } from '../environments/environment';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
 
 @Component({
@@ -26,13 +25,13 @@ import { LocaleSwitcherComponent } from './components/locale-switcher/locale-swi
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AppComponent implements AfterViewInit{
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
-  options = ['RU', 'EN'];
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -75,7 +74,6 @@ export class AppComponent implements AfterViewInit{
   }
 
   ngAfterViewInit(): void {
-    console.log(environment.locale);
     this.startGame();
   }
 
