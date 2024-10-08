@@ -7,7 +7,6 @@ import { EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
-import { KeyboardComponent } from './components/keyboard/keyboard/keyboard.component';
 import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
 import { NgIf } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -15,6 +14,7 @@ import { map } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from './directives/colour.directive';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
+import { KeyboardComponent } from './components/keyboard/keyboard.component';
 
 @Component({
   selector: 'app-root',

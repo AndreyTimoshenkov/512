@@ -17,13 +17,11 @@ import { LocalStorageService } from '../../services/local-storage/local-storage.
 export class LocaleSwitcherComponent implements OnInit, OnDestroy {
   options = ESupportedLocale;
   form = new FormGroup({
-    localeControl: new FormControl<keys | null>(null),
+    localeControl: new FormControl<keys>(null),
   });
-  //@ts-ignore
   subscription: Subscription;
 
   get locale(): ESupportedLocale {
-    //@ts-ignore
     return this.ls.getLocale() ? this.ls.getLocale() : environment.locale;
   }
 
@@ -47,7 +45,7 @@ export class LocaleSwitcherComponent implements OnInit, OnDestroy {
     this.subscription?.unsubscribe();
   }
 
-  sanitize(item: ESupportedLocale | null): keys | null {
+  sanitize(item: ESupportedLocale): keys {
     if (!item) return null;
 
     for (const [key, value] of Object.entries(ESupportedLocale)) {
