@@ -5,4 +5,4 @@ export enum ESupportedLocale {
   TR = 'tr-TR',
 }
 
-export type keys = keyof typeof ESupportedLocale;
+export type TCodes = keyof typeof ESupportedLocale;

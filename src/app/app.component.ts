@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, Inject, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -8,20 +8,22 @@ import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
 import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from './directives/colour.directive';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
 import { KeyboardComponent } from './components/keyboard/keyboard.component';
+import { I18N_CORE } from '../libs/i18n.factory';
+import { I18nCore } from '../libs/i18n.interface';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf,
-    ColourDirective, LocaleSwitcherComponent
+    ColourDirective, LocaleSwitcherComponent, AsyncPipe
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
@@ -40,6 +42,7 @@ export class AppComponent implements AfterViewInit{
     private ls: LocalStorageService,
     private shift: ShiftService,
     private breakPointObserver: BreakpointObserver,
+    @Inject(I18N_CORE) public readonly i18nCore$: Observable<I18nCore>,
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
@@ -75,6 +78,7 @@ export class AppComponent implements AfterViewInit{
 
   ngAfterViewInit(): void {
     this.startGame();
+    this.i18nCore$.subscribe(console.log)
   }
 
   @HostListener('window:keydown', ['$event'])

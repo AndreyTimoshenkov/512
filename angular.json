@@ -108,7 +108,11 @@
           }
         }
       }
-    }
+    },
+    "core": {
+            "root": "libs/core",
+            "projectType": "application"
+          }
   },
   "cli": {
     "analytics": false,
