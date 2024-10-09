@@ -42,7 +42,7 @@ export class AppComponent implements AfterViewInit{
     private ls: LocalStorageService,
     private shift: ShiftService,
     private breakPointObserver: BreakpointObserver,
-    @Inject(I18N_CORE) public readonly i18nCore$: Observable<I18nCore>,
+    // @Inject(I18N_CORE) public readonly i18nCore$: Observable<I18nCore>,
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
@@ -78,7 +78,7 @@ export class AppComponent implements AfterViewInit{
 
   ngAfterViewInit(): void {
     this.startGame();
-    this.i18nCore$.subscribe(console.log)
+    // this.i18nCore$.subscribe(console.log)
   }
 
   @HostListener('window:keydown', ['$event'])
