@@ -10,20 +10,18 @@ import { ShiftService } from './services/shift/shift.service';
 import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, Observable } from 'rxjs';
+import { map } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from './directives/colour.directive';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
 import { KeyboardComponent } from './components/keyboard/keyboard.component';
-import { I18N_CORE } from '../libs/i18n.factory';
-import { I18nCore } from '../libs/i18n.interface';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf,
-    ColourDirective, LocaleSwitcherComponent, AsyncPipe
+    ColourDirective, LocaleSwitcherComponent, AsyncPipe, TranslateModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
@@ -34,6 +32,8 @@ export class AppComponent implements AfterViewInit{
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
+  param = {value: 'New game'};
+  paramRU = { value: 'Новая игра'}
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -43,6 +43,7 @@ export class AppComponent implements AfterViewInit{
     private shift: ShiftService,
     private breakPointObserver: BreakpointObserver,
     // @Inject(I18N_CORE) public readonly i18nCore$: Observable<I18nCore>,
+    private translate: TranslateService
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
@@ -74,11 +75,15 @@ export class AppComponent implements AfterViewInit{
     this.isMobile$$ = toSignal(this.breakPointObserver.observe('(max-width: 959.98px)').pipe(
         map((state: BreakpointState) => state.matches)
     ));
+
+    this.translate.setDefaultLang('en');
+    this.translate.use('en');
   }
 
   ngAfterViewInit(): void {
     this.startGame();
     // this.i18nCore$.subscribe(console.log)
+    // this.translate.get('CORE.NEW_GAME', {value: 'New game'}).subscribe(console.log);
   }
 
   @HostListener('window:keydown', ['$event'])

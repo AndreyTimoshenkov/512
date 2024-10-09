@@ -1,0 +1,3 @@
+{
+  "CORE": "hello {{value}}"
+}

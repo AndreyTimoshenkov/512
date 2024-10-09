@@ -5,7 +5,7 @@
     <p>Turn: {{ turn$$() }}</p>
     <p>Score: {{ score$$() }}</p>
   </div>
-   <button (click)="restartGame()">New game</button>
+   <button (click)="restartGame()">{{ 'CORE.NEW_GAME' | translate:paramRU }}</button>
 </div>
 
 <grid-container class="game">
@@ -20,6 +20,8 @@
 <div class="rules">
   How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!
 </div>
+
+
 
 <!-- <ng-container *ngIf="{
   core: i18nCore$ | async,
