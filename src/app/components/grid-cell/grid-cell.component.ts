@@ -13,7 +13,6 @@ import { EGridCellColor, IGridCellState, TGridCellColor } from './grid-cell.type
 })
 export class GridCellComponent {
   _cellState: IGridCellState = {key: 0, value: 0};
-  //@ts-ignore
   cellState: WritableSignal<IGridCellState> = signal<IGridCellState>(null);
   cellColor$$: WritableSignal<TGridCellColor> = signal<TGridCellColor>(EGridCellColor.grey);
 

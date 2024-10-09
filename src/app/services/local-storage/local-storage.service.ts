@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { IGridCellState } from '../../components/grid-cell/grid-cell.type';
 import { WINDOW } from './injection-tokens';
+import { ESupportedLocale } from '../../components/locale-switcher/locale.types';
 
 @Injectable({
   providedIn: 'root'
@@ -24,7 +25,10 @@ export class LocalStorageService {
 
   clear(): void {
     if (!this.getState()) { return; }
+
+    const locale = this.getLocale();
     this._window.localStorage?.clear();
+    if (locale) {this.saveLocale(locale)};
   }
 
   saveTurn(turn: number) {
@@ -45,5 +49,14 @@ export class LocalStorageService {
     const score = this._window.localStorage?.getItem('score');
 
     return score ? JSON.parse(score) : 0;
+  }
+
+  saveLocale(locale: ESupportedLocale) {
+    this._window.localStorage.setItem('locale', JSON.stringify(locale));
+  }
+
+  getLocale(): ESupportedLocale | null {
+    const locale = (this._window.localStorage?.getItem('locale'));
+    return locale ? JSON.parse(locale) : null;
   }
 }

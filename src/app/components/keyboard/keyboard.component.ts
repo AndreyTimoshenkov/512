@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { EDirection } from '../../../interfaces/general.types';
+import { EDirection } from '../../interfaces/general.types';
 
 @Component({
   selector: 'app-keyboard',

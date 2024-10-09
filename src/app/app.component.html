@@ -1,3 +1,5 @@
+<app-locale-switcher></app-locale-switcher>
+
 <div class="scoreboard">
   <div class="scoreboard_text">
     <p>Turn: {{ turn$$() }}</p>
@@ -18,3 +20,9 @@
 <div class="rules">
   How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!
 </div>
+
+<!-- <ng-container *ngIf="{
+  core: i18nCore$ | async,
+} as i18n">
+  <p>{{ i18n.core?.language }}</p>
+</ng-container> -->

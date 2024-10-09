@@ -22,7 +22,8 @@
     "lib": [
       "ES2022",
       "dom"
-    ]
+    ],
+    "strictNullChecks": false,
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
@@ -30,6 +31,6 @@
     "strictInputAccessModifiers": true,
     "strictTemplates": false,
     "strictPropertyInitialization": false,
-    "strictNullChecks": true,
   }
 }
+// "strictNullChecks": true,
