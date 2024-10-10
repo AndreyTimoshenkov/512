@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ESupportedLocale, TCodes } from './locale.types';
 import { environment } from '../../../environments/environment';
@@ -21,6 +21,8 @@ export class LocaleSwitcherComponent implements OnInit, OnDestroy {
   });
   subscription: Subscription;
 
+  @Output() localeChanged = new EventEmitter<TCodes>();
+
   get locale(): ESupportedLocale {
     return this.ls.getLocale() ? this.ls.getLocale() : environment.locale;
   }
@@ -37,6 +39,7 @@ export class LocaleSwitcherComponent implements OnInit, OnDestroy {
     ).subscribe((selected: TCodes) => {
       if (ESupportedLocale.hasOwnProperty(selected)) {
         this.ls.saveLocale(ESupportedLocale[selected]);
+        this.localeChanged.emit(selected);
       }
     });
   }

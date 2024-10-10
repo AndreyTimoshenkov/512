@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, Inject, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -16,6 +16,7 @@ import { ColourDirective } from './directives/colour.directive';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
 import { KeyboardComponent } from './components/keyboard/keyboard.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TCodes } from './components/locale-switcher/locale.types';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -27,13 +28,19 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   styleUrl: './app.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent implements AfterViewInit{
+export class AppComponent implements AfterViewInit {
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
-  param = {value: 'New game'};
-  paramRU = { value: 'Новая игра'}
+  translations = {
+    'RU': { game: 'Новая игра', turn: 'Ход', score: 'Счёт', rules: 'Как играть: Используйте клавиши со стрелками, чтобы перемещать плитки. Плитки с одинаковыми числами объединяются в одну, когда они соприкасаются. Складывайте их, чтобы получить 512!' },
+    'EN' : { game: 'New game', turn: 'Turn', score: 'Score', rules: 'How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!' },
+    'TR' : { game: 'Yeni oyun', turn: 'Dönüş', score: 'Gol', rules: "Nasıl oynanır: Taşları hareket ettirmek için ok tuşlarını kullanın. Aynı sayıya sahip taşlar birbirine değdiğinde birleşir. 512t'ye ulaşmak için bunları toplayın"},
+    'FR' : { game: 'Nouveau jeu', turn: 'Tourner', score: 'Score', rules: "Comment jouer : utilisez les touches fléchées pour déplacer les tuiles. Les tuiles portant le même numéro fusionnent en une seule lorsqu'elles se touchent. Additionnez-les pour atteindre 512 !"}
+  }
+  //@ts-ignore
+  params;
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -77,13 +84,12 @@ export class AppComponent implements AfterViewInit{
     ));
 
     this.translate.setDefaultLang('en');
-    this.translate.use('en');
   }
 
   ngAfterViewInit(): void {
     this.startGame();
-    // this.i18nCore$.subscribe(console.log)
-    // this.translate.get('CORE.NEW_GAME', {value: 'New game'}).subscribe(console.log);
+    const code = this.ls.getLocale()?.slice(0, 2);
+    this.translate.use(code || 'ru');
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -178,5 +184,17 @@ export class AppComponent implements AfterViewInit{
     this.turn$$.update(turn => turn += 1);
 
     this.generateValues();
+  }
+
+  onLocaleChanged(code: TCodes) {
+    const locale = code.toLocaleLowerCase();
+    this.translate.use(locale);
+    this.params = this.selectParams(code);
+    console.log(code, this.params);
+  }
+
+  selectParams(code: TCodes){
+    // console.log(this.param[`${code}`]);
+    return (this.translations[`${code}`]);
   }
 }

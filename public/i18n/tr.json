@@ -1,3 +1,6 @@
 {
-  "CORE": "hello {{value}}"
+  "NEW_GAME": "{{ game }}",
+  "TURN": "{{ turn }}",
+  "SCORE": "{{ score }}",
+  "RULES": "{{ rules }}"
 }
