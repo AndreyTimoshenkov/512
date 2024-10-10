@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, Inject, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -10,30 +10,31 @@ import { ShiftService } from './services/shift/shift.service';
 import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map, Observable } from 'rxjs';
+import { map } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from './directives/colour.directive';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
 import { KeyboardComponent } from './components/keyboard/keyboard.component';
-import { I18N_CORE } from '../libs/i18n.factory';
-import { I18nCore } from '../libs/i18n.interface';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TCodes } from './components/locale-switcher/locale.types';
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
     RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf,
-    ColourDirective, LocaleSwitcherComponent, AsyncPipe
+    ColourDirective, LocaleSwitcherComponent, AsyncPipe, TranslateModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent implements AfterViewInit{
+export class AppComponent implements AfterViewInit {
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
+  //@ts-ignore
+  params;
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -43,6 +44,7 @@ export class AppComponent implements AfterViewInit{
     private shift: ShiftService,
     private breakPointObserver: BreakpointObserver,
     // @Inject(I18N_CORE) public readonly i18nCore$: Observable<I18nCore>,
+    private translate: TranslateService
   ) {
     effect(() => {
       if (!this.cellList.length) { return; }
@@ -74,11 +76,14 @@ export class AppComponent implements AfterViewInit{
     this.isMobile$$ = toSignal(this.breakPointObserver.observe('(max-width: 959.98px)').pipe(
         map((state: BreakpointState) => state.matches)
     ));
+
+    this.translate.setDefaultLang('en');
   }
 
   ngAfterViewInit(): void {
     this.startGame();
-    // this.i18nCore$.subscribe(console.log)
+    const code = this.ls.getLocale()?.slice(0, 2);
+    this.translate.use(code || 'ru');
   }
 
   @HostListener('window:keydown', ['$event'])
@@ -173,5 +178,10 @@ export class AppComponent implements AfterViewInit{
     this.turn$$.update(turn => turn += 1);
 
     this.generateValues();
+  }
+
+  onLocaleChanged(code: TCodes) {
+    const locale = code.toLocaleLowerCase();
+    this.translate.use(locale);
   }
 }

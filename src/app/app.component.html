@@ -1,11 +1,11 @@
-<app-locale-switcher></app-locale-switcher>
+<app-locale-switcher (localeChanged)="onLocaleChanged($event)"></app-locale-switcher>
 
 <div class="scoreboard">
   <div class="scoreboard_text">
-    <p>Turn: {{ turn$$() }}</p>
-    <p>Score: {{ score$$() }}</p>
+    <p>{{'TURN' | translate: params }}: {{ turn$$() }}</p>
+    <p>{{'SCORE' | translate: params }}: {{ score$$() }}</p>
   </div>
-   <button (click)="restartGame()">New game</button>
+   <button (click)="restartGame()">{{ 'NEW_GAME' | translate: params }}</button>
 </div>
 
 <grid-container class="game">
@@ -18,7 +18,7 @@
 </ng-container>
 
 <div class="rules">
-  How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!
+  {{ 'RULES' | translate: params }}
 </div>
 
 <!-- <ng-container *ngIf="{
