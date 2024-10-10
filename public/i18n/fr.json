@@ -1,6 +1,6 @@
 {
-  "NEW_GAME": "{{ game }}",
-  "TURN": "{{ turn }}",
-  "SCORE": "{{ score }}",
-  "RULES": "{{ rules }}"
+  "NEW_GAME": "Nouveau jeu",
+  "TURN": "Tourner",
+  "SCORE": "Score",
+  "RULES": "Comment jouer : utilisez les touches fléchées pour déplacer les tuiles. Les tuiles portant le même numéro fusionnent en une seule lorsqu'elles se touchent. Additionnez-les pour atteindre 512!"
 }

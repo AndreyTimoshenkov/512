@@ -1,6 +1,6 @@
 {
-  "NEW_GAME": "{{ game }}",
-  "TURN": "{{ turn }}",
-  "SCORE": "{{ score }}",
-  "RULES": "{{ rules }}"
+  "NEW_GAME": "Yeni oyun",
+  "TURN": "Dönüş",
+  "SCORE": "Gol",
+  "RULES": "Nasıl oynanır: Taşları hareket ettirmek için ok tuşlarını kullanın. Aynı sayıya sahip taşlar birbirine değdiğinde birleşir. 512t'ye ulaşmak için bunları toplayın"
 }

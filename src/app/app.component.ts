@@ -33,12 +33,6 @@ export class AppComponent implements AfterViewInit {
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
-  translations = {
-    'RU': { game: 'Новая игра', turn: 'Ход', score: 'Счёт', rules: 'Как играть: Используйте клавиши со стрелками, чтобы перемещать плитки. Плитки с одинаковыми числами объединяются в одну, когда они соприкасаются. Складывайте их, чтобы получить 512!' },
-    'EN' : { game: 'New game', turn: 'Turn', score: 'Score', rules: 'How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!' },
-    'TR' : { game: 'Yeni oyun', turn: 'Dönüş', score: 'Gol', rules: "Nasıl oynanır: Taşları hareket ettirmek için ok tuşlarını kullanın. Aynı sayıya sahip taşlar birbirine değdiğinde birleşir. 512t'ye ulaşmak için bunları toplayın"},
-    'FR' : { game: 'Nouveau jeu', turn: 'Tourner', score: 'Score', rules: "Comment jouer : utilisez les touches fléchées pour déplacer les tuiles. Les tuiles portant le même numéro fusionnent en une seule lorsqu'elles se touchent. Additionnez-les pour atteindre 512 !"}
-  }
   //@ts-ignore
   params;
 
@@ -189,12 +183,5 @@ export class AppComponent implements AfterViewInit {
   onLocaleChanged(code: TCodes) {
     const locale = code.toLocaleLowerCase();
     this.translate.use(locale);
-    this.params = this.selectParams(code);
-    console.log(code, this.params);
-  }
-
-  selectParams(code: TCodes){
-    // console.log(this.param[`${code}`]);
-    return (this.translations[`${code}`]);
   }
 }

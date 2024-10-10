@@ -1,6 +1,6 @@
 {
-  "NEW_GAME": "{{ game }}",
-  "TURN": "{{ turn }}",
-  "SCORE": "{{ score }}",
-  "RULES": "{{ rules }}"
+  "NEW_GAME": "New game",
+  "TURN": "Turn",
+  "SCORE": "Score",
+  "RULES": "How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!"
 }
