@@ -2,5 +2,7 @@
   "NEW_GAME": "Nouveau jeu",
   "TURN": "Tourner",
   "SCORE": "Score",
-  "RULES": "Comment jouer : utilisez les touches fléchées pour déplacer les tuiles. Les tuiles portant le même numéro fusionnent en une seule lorsqu'elles se touchent. Additionnez-les pour atteindre 512!"
+  "RULES": "Comment jouer : utilisez les touches fléchées pour déplacer les tuiles. Les tuiles portant le même numéro fusionnent en une seule lorsqu'elles se touchent. Additionnez-les pour atteindre 512!",
+  "CONFIRM": "Êtes-vous sûr de vouloir commencer une nouvelle partie? Toute la progression sera perdue",
+  "GAME_OVER": "JEU TERMINÉ!!"
 }

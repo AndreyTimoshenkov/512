@@ -2,10 +2,10 @@
 
 <div class="scoreboard">
   <div class="scoreboard_text">
-    <p>{{'TURN' | translate: params }}: {{ turn$$() }}</p>
-    <p>{{'SCORE' | translate: params }}: {{ score$$() }}</p>
+    <p>{{'TURN' | translate }}: {{ turn$$() }}</p>
+    <p>{{'SCORE' | translate }}: {{ score$$() }}</p>
   </div>
-   <button (click)="restartGame()">{{ 'NEW_GAME' | translate: params }}</button>
+   <button (click)="restartGame()">{{ 'NEW_GAME' | translate }}</button>
 </div>
 
 <grid-container class="game">
@@ -18,7 +18,7 @@
 </ng-container>
 
 <div class="rules">
-  {{ 'RULES' | translate: params }}
+  {{ 'RULES' | translate }}
 </div>
 
 <!-- <ng-container *ngIf="{

@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, signal, ViewChildren, WritableSignal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, OnDestroy, signal, ViewChildren, WritableSignal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
@@ -10,7 +10,7 @@ import { ShiftService } from './services/shift/shift.service';
 import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { map, Subscription } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
 import { ColourDirective } from './directives/colour.directive';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
@@ -28,13 +28,12 @@ import { TCodes } from './components/locale-switcher/locale.types';
   styleUrl: './app.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AppComponent implements AfterViewInit {
+export class AppComponent implements AfterViewInit, OnDestroy {
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
   isMobile$$ = signal(false);
-  //@ts-ignore
-  params;
+  subscription: Subscription;
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
 
@@ -67,8 +66,11 @@ export class AppComponent implements AfterViewInit {
       setTimeout(() => {
         this.cdr.detectChanges();
 
+        let msg = '';
+        this.subscription = this.translate.get('GAME_OVER').subscribe(string => msg = string);
+
         return !this.hasEmptyCells(this.cellList).length
-          ? alert('GAME OVER!!')
+          ? alert(msg)
           : null;
       }, 0);
     });
@@ -78,6 +80,9 @@ export class AppComponent implements AfterViewInit {
     ));
 
     this.translate.setDefaultLang('en');
+  }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
   ngAfterViewInit(): void {
@@ -158,7 +163,10 @@ export class AppComponent implements AfterViewInit {
   }
 
   restartGame() {
-    const confirmed = confirm('Are you sure you want to start a new game? All progress will be lost')
+    let msg = '';
+    this.subscription = this.translate.get('CONFIRM').subscribe(string => msg = string);
+
+    const confirmed = confirm(msg);
     if (confirmed) {
       this.ls.clear();
       this.startGame();

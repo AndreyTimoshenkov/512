@@ -2,5 +2,7 @@
   "NEW_GAME": "New game",
   "TURN": "Turn",
   "SCORE": "Score",
-  "RULES": "How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!"
+  "RULES": "How to play: Use your arrow keys to move the tiles. Tiles with the same number merge into one when they touch. Add them up to reach 512!",
+  "CONFIRM": "Are you sure you want to start a new game? All progress will be lost",
+  "GAME_OVER": "GAME OVER!!"
 }
