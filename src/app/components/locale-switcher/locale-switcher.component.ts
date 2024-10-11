@@ -5,11 +5,12 @@ import { environment } from '../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { map, Subscription } from 'rxjs';
 import { LocalStorageService } from '../../services/local-storage/local-storage.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-locale-switcher',
   standalone: true,
-  imports: [ CommonModule, ReactiveFormsModule, CommonModule ],
+  imports: [ CommonModule, ReactiveFormsModule, CommonModule, IconComponent ],
   templateUrl: './locale-switcher.component.html',
   styleUrl: './locale-switcher.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,
