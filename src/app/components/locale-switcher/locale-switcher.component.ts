@@ -9,7 +9,7 @@ import { LocalStorageService } from '../../services/local-storage/local-storage.
 @Component({
   selector: 'app-locale-switcher',
   standalone: true,
-  imports: [ CommonModule, ReactiveFormsModule ],
+  imports: [ CommonModule, ReactiveFormsModule, CommonModule ],
   templateUrl: './locale-switcher.component.html',
   styleUrl: './locale-switcher.component.less',
   changeDetection: ChangeDetectionStrategy.OnPush,

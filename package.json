@@ -27,6 +27,7 @@
     "@ngx-translate/http-loader": "^8.0.0",
     "@types/lodash": "^4.17.7",
     "express": "^4.18.2",
+    "flag-icons": "^7.2.3",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.10"
