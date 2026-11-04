@@ -2,11 +2,10 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { EDirection } from '../../interfaces/general.types';
 
 @Component({
-  selector: 'app-keyboard',
-  standalone: true,
-  imports: [],
-  templateUrl: './keyboard.component.html',
-  styleUrl: './keyboard.component.less'
+    selector: 'app-keyboard',
+    imports: [],
+    templateUrl: './keyboard.component.html',
+    styleUrl: './keyboard.component.less'
 })
 export class KeyboardComponent {
   @Output() keyboardClick = new EventEmitter<EDirection>();

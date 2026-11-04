@@ -2,14 +2,13 @@ import { NgIf } from '@angular/common';
 import { Component, HostBinding, Input, signal, WritableSignal } from '@angular/core';
 import { EGridCellColor, IGridCellState, TGridCellColor } from './grid-cell.type';
 @Component({
-  selector: 'grid-cell',
-  standalone: true,
-  imports: [ NgIf],
-  templateUrl: './grid-cell.component.html',
-  styleUrl: './grid-cell.component.less',
-  host: {
-    '[style.--cell-color]': 'cellColor$$()',
-  }
+    selector: 'grid-cell',
+    imports: [NgIf],
+    templateUrl: './grid-cell.component.html',
+    styleUrl: './grid-cell.component.less',
+    host: {
+        '[style.--cell-color]': 'cellColor$$()',
+    }
 })
 export class GridCellComponent {
   _cellState: IGridCellState = {key: 0, value: 0};

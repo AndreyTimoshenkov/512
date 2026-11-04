@@ -7,12 +7,11 @@ import { map, Subscription } from 'rxjs';
 import { LocalStorageService } from '../../services/local-storage/local-storage.service';
 
 @Component({
-  selector: 'app-locale-switcher',
-  standalone: true,
-  imports: [ CommonModule, ReactiveFormsModule ],
-  templateUrl: './locale-switcher.component.html',
-  styleUrl: './locale-switcher.component.less',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-locale-switcher',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './locale-switcher.component.html',
+    styleUrl: './locale-switcher.component.less',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class LocaleSwitcherComponent implements OnInit, OnDestroy {
   options = ESupportedLocale;

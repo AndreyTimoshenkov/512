@@ -18,15 +18,14 @@ import { KeyboardComponent } from './components/keyboard/keyboard.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TCodes } from './components/locale-switcher/locale.types';
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [
-    RouterOutlet, GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf,
-    ColourDirective, LocaleSwitcherComponent, AsyncPipe, TranslateModule
-  ],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.less',
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-root',
+    imports: [
+        GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf,
+        ColourDirective, LocaleSwitcherComponent, TranslateModule
+    ],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.less',
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AppComponent implements AfterViewInit, OnDestroy {
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
@@ -82,7 +81,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.translate.setDefaultLang('en');
   }
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.subscription?.unsubscribe();
   }
 
   ngAfterViewInit(): void {
