@@ -1,6 +1,6 @@
 # 512
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.1.
+An Angular 22 game. Use `nvm use` to select the Node version in `.nvmrc`, then install dependencies with `npm ci`.
 
 ## Development server
 
@@ -12,11 +12,19 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Run `npm run build` to build the project. Generated artifacts are stored in the ignored `docs/` directory.
 
 ## Running unit tests
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Run `npm test -- --watch=false` to execute the unit tests with Vitest.
+
+## Automatic deployment
+
+`.github/workflows/pages.yml` checks test types, runs tests, and builds the site on pull requests and pushes to `main`. Only successful builds on `main` deploy to https://andreytimoshenkov.github.io/512/. The workflow can also be run manually from the Actions tab.
+
+GitHub Pages must use **GitHub Actions** as its publishing source (Settings → Pages → Build and deployment). No personal access token is required; deployment uses the workflow's `GITHUB_TOKEN`.
+
+`npm run build:pages` builds with the `/512/` base URL and prepares the browser entry point and a `404.html` fallback. Only `docs/browser` is uploaded; GitHub Pages hosts static files and does not run the Node SSR server. Generated files do not need to be committed or pushed to `gh-pages`.
 
 ## Running end-to-end tests
 
