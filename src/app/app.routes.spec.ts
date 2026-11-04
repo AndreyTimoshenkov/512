@@ -9,14 +9,14 @@ describe('App routes', () => {
 
   it('accepts the root URL without redirecting', async () => {
     const router = TestBed.inject(Router);
-    expect(await router.navigateByUrl('/')).toBeTrue();
+    expect(await router.navigateByUrl('/')).toBe(true);
     expect(router.url).toBe('/');
     expect(router.routerState.snapshot.root.firstChild?.routeConfig?.redirectTo).toBeUndefined();
   });
 
   it('redirects unknown URLs to the root', async () => {
     const router = TestBed.inject(Router);
-    expect(await router.navigateByUrl('/nonexistent')).toBeTrue();
+    expect(await router.navigateByUrl('/nonexistent')).toBe(true);
     expect(router.url).toBe('/');
   });
 });

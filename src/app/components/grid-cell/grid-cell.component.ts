@@ -1,11 +1,12 @@
 
-import { Component, HostBinding, Input, signal, WritableSignal } from '@angular/core';
+import { Component, HostBinding, Input, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
 import { EGridCellColor, IGridCellState, TGridCellColor } from './grid-cell.type';
 @Component({
     selector: 'grid-cell',
     imports: [],
     templateUrl: './grid-cell.component.html',
     styleUrl: './grid-cell.component.less',
+    changeDetection: ChangeDetectionStrategy.Eager,
     host: {
         '[style.--cell-color]': 'cellColor$$()',
     }
