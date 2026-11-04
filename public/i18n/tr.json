@@ -2,7 +2,8 @@
   "NEW_GAME": "Yeni oyun",
   "TURN": "Dönüş",
   "SCORE": "Gol",
-  "RULES": "Nasıl oynanır: Taşları hareket ettirmek için ok tuşlarını kullanın. Aynı sayıya sahip taşlar birbirine değdiğinde birleşir. 512t'ye ulaşmak için bunları toplayın",
+  "RULES": "Nasıl oynanır: Taşları hareket ettirmek için kaydırın, sürükleyin veya ok tuşlarını kullanın. Aynı sayıya sahip taşlar birbirine değdiğinde birleşir. 512’ye ulaşın!",
   "CONFIRM": "Yeni bir oyun başlatmak istediğinizden emin misiniz? Tüm ilerleme kaybolacak",
-  "GAME_OVER": "OYUN BİTTİ!!"
+  "GAME_OVER": "OYUN BİTTİ!!",
+  "HOW_TO_PLAY": "Nasıl oynanır"
 }

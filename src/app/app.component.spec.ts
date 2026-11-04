@@ -1,6 +1,9 @@
 import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { TranslateModule } from '@ngx-translate/core';
+import { By } from '@angular/platform-browser';
+import { SwipeDirective } from './directives/swipe.directive';
+import { EDirection } from './interfaces/general.types';
 import { AppComponent } from './app.component';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 
@@ -64,4 +67,57 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AppComponent);
     expect(() => fixture.destroy()).not.toThrow();
   });
+  it('does not spawn tiles or increment turns when a move leaves the board unchanged', () => {
+    const app = TestBed.createComponent(AppComponent).componentInstance;
+    app.generateKeys();
+    app.state$$.update(state => state.map(cell => ({ ...cell, value: cell.key === 0 ? 2 : 0 })));
+    const before = structuredClone(app.state$$());
+    app.move(EDirection.left);
+    expect(app.state$$()).toEqual(before);
+    expect(app.turn$$()).toBe(1);
+    expect(app.score$$()).toBe(0);
+  });
+
+  it('uses the same move handler for arrows and gestures and removes mobile buttons', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const app = fixture.componentInstance;
+    const move = vi.spyOn(app, 'move');
+    const event = new KeyboardEvent('keydown', { code: 'ArrowRight', cancelable: true });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(move).toHaveBeenCalledWith(EDirection.right);
+    fixture.debugElement.query(By.directive(SwipeDirective)).injector.get(SwipeDirective).swipe.emit(EDirection.left);
+    expect(move).toHaveBeenCalledWith(EDirection.left);
+    expect(fixture.nativeElement.querySelector('[appSwipe]')).toBeTruthy();
+    expect(fixture.nativeElement.querySelector('app-keyboard')).toBeNull();
+  });
+
+  it('shows instructions on hover or click and dismisses them with Escape or an outside click', async () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const help = fixture.nativeElement.querySelector('.help') as HTMLElement;
+    const button = help.querySelector('button')!;
+    expect(fixture.nativeElement.querySelector('.rules')).toBeNull();
+    help.dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(help.querySelector('.rules')).toBeTruthy();
+    help.dispatchEvent(new MouseEvent('mouseleave'));
+    fixture.detectChanges();
+    expect(help.querySelector('.rules')).toBeNull();
+    button.click();
+    fixture.detectChanges();
+    expect(help.querySelector('.rules')).toBeTruthy();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    fixture.detectChanges();
+    expect(help.querySelector('.rules')).toBeNull();
+    button.click();
+    document.body.click();
+    fixture.detectChanges();
+    expect(help.querySelector('.rules')).toBeNull();
+  });
+
 });

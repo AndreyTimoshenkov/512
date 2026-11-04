@@ -1,5 +1,4 @@
 import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, effect, HostListener, OnDestroy, signal, ViewChildren, WritableSignal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
 import { IGridCellState } from './components/grid-cell/grid-cell.type';
@@ -7,14 +6,11 @@ import { EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
-import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
-import { AsyncPipe } from '@angular/common';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { map, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
+import { SwipeDirective } from './directives/swipe.directive';
 import { ColourDirective } from './directives/colour.directive';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
-import { KeyboardComponent } from './components/keyboard/keyboard.component';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TCodes } from './components/locale-switcher/locale.types';
 @Component({
@@ -22,7 +18,7 @@ import { TCodes } from './components/locale-switcher/locale.types';
     imports: [
     GridContainerComponent,
     GridCellComponent,
-    KeyboardComponent,
+    SwipeDirective,
     ColourDirective,
     LocaleSwitcherComponent,
     TranslateModule
@@ -35,7 +31,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
-  isMobile$$ = signal(false);
+  instructionsOpen = signal(false);
   subscription: Subscription;
 
   @ViewChildren(GridCellComponent) cellList: Array<GridCellComponent> = [];
@@ -44,7 +40,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private ls: LocalStorageService,
     private shift: ShiftService,
-    private breakPointObserver: BreakpointObserver,
     // @Inject(I18N_CORE) public readonly i18nCore$: Observable<I18nCore>,
     private translate: TranslateService
   ) {
@@ -77,11 +72,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
           : null;
       }, 0);
     });
-    //@ts-ignore
-    this.isMobile$$ = toSignal(this.breakPointObserver.observe('(max-width: 959.98px)').pipe(
-        map((state: BreakpointState) => state.matches)
-    ));
-
     this.translate.setDefaultLang('en');
   }
   ngOnDestroy(): void {
@@ -94,27 +84,47 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     this.translate.use(code || 'ru');
   }
 
-  @HostListener('window:keydown', ['$event'])
-    move(event: KeyboardEvent) {
-      const direction = event.code as EDirection;
-
-      if (!isDirection(direction)) { return; }
-
-      this.state$$.update(state => {
-        const prevState = cloneDeep(state)
-        const split = this.shift.splitArray(state, direction);
-        split.forEach(row => {
-          const [newState, score] = this.shift.shiftArray(row, direction);
-          this.score$$.update(prevScore => prevScore + score);
-        });
-
-        if (!isEqual(prevState, state)) {
-          this.generateValues();
-          this.turn$$.update(turn => turn += 1);
-        }
-        return state;
-      });
+  @HostListener('document:click', ['$event'])
+  dismissInstructions(event: MouseEvent): void {
+    if (!(event.target as HTMLElement | null)?.closest?.('.help')) {
+      this.instructionsOpen.set(false);
     }
+  }
+
+  @HostListener('document:focusin', ['$event'])
+  onFocusChanged(event: FocusEvent): void {
+    if (!(event.target as HTMLElement | null)?.closest?.('.help')) {
+      this.instructionsOpen.set(false);
+    }
+  }
+
+  @HostListener('window:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Escape') { this.instructionsOpen.set(false); }
+    const direction = event.code as EDirection;
+    const target = event.target as HTMLElement | null;
+    if (!isDirection(direction) || event.altKey || event.ctrlKey || event.metaKey ||
+        target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) {
+      return;
+    }
+    event.preventDefault();
+    this.move(direction);
+  }
+
+  move(direction: EDirection) {
+    const previous = this.state$$();
+    const next = cloneDeep(previous);
+    let score = 0;
+    for (const row of this.shift.splitArray(next, direction)) {
+      score += this.shift.shiftArray(row, direction)[1];
+    }
+    if (isEqual(previous, next)) { return; }
+
+    this.state$$.set(next);
+    this.score$$.update(value => value + score);
+    this.generateValues();
+    this.turn$$.update(turn => turn + 1);
+  }
 
   generateKeys(width: number = 4, height: number = 4) {
     const state: IGridCellState[] = [];
@@ -174,21 +184,6 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       this.ls.clear();
       this.startGame();
     }
-  }
-
-  onKeyboardClick(direction: EDirection) {
-    this.state$$.update(state => {
-      const split = this.shift.splitArray(state, direction);
-      split.forEach(row => {
-        const [state, score] = this.shift.shiftArray(row, direction);
-        this.score$$.update(prevScore => prevScore + score);
-      });
-      return state;
-    });
-
-    this.turn$$.update(turn => turn += 1);
-
-    this.generateValues();
   }
 
   onLocaleChanged(code: TCodes) {

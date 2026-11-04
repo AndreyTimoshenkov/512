@@ -15,6 +15,7 @@ import { LocalStorageService } from '../../services/local-storage/local-storage.
 })
 export class LocaleSwitcherComponent implements OnInit, OnDestroy {
   options = ESupportedLocale;
+  flags: Record<TCodes, string> = { EN: '🇬🇧', FR: '🇫🇷', RU: '🇷🇺', TR: '🇹🇷' };
   form = new FormGroup({
     localeControl: new FormControl<TCodes>(null),
   });
