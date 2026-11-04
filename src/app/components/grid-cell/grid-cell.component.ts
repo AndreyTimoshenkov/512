@@ -1,9 +1,9 @@
-import { NgIf } from '@angular/common';
+
 import { Component, HostBinding, Input, signal, WritableSignal } from '@angular/core';
 import { EGridCellColor, IGridCellState, TGridCellColor } from './grid-cell.type';
 @Component({
     selector: 'grid-cell',
-    imports: [NgIf],
+    imports: [],
     templateUrl: './grid-cell.component.html',
     styleUrl: './grid-cell.component.less',
     host: {

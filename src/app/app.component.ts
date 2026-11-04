@@ -8,7 +8,7 @@ import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
 import { BreakpointObserver, BreakpointState } from './services/breakpoint-observer/breakpoint-observer';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map, Subscription } from 'rxjs';
 import { cloneDeep, isEqual } from 'lodash';
@@ -20,9 +20,13 @@ import { TCodes } from './components/locale-switcher/locale.types';
 @Component({
     selector: 'app-root',
     imports: [
-        GridContainerComponent, GridCellComponent, KeyboardComponent, NgIf,
-        ColourDirective, LocaleSwitcherComponent, TranslateModule
-    ],
+    GridContainerComponent,
+    GridCellComponent,
+    KeyboardComponent,
+    ColourDirective,
+    LocaleSwitcherComponent,
+    TranslateModule
+],
     templateUrl: './app.component.html',
     styleUrl: './app.component.less',
     changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,1 +1,3 @@
-<p *ngIf="hasValue" class="value">{{this._cellState.value}}</p>
+@if (hasValue) {
+  <p class="value">{{this._cellState.value}}</p>
+}

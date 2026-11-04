@@ -5,7 +5,7 @@
     <p>{{'TURN' | translate }}: {{ turn$$() }}</p>
     <p>{{'SCORE' | translate }}: {{ score$$() }}</p>
   </div>
-   <button (click)="restartGame()">{{ 'NEW_GAME' | translate }}</button>
+  <button (click)="restartGame()">{{ 'NEW_GAME' | translate }}</button>
 </div>
 
 <grid-container class="game">
@@ -13,9 +13,9 @@
     <grid-cell bcgColour [bcg]="cell.value" [cellKey]="cell.key" [value]="cell.value" ></grid-cell>
   }
 </grid-container>
-<ng-container *ngIf="isMobile$$()">
+@if (isMobile$$()) {
   <app-keyboard (keyboardClick)="onKeyboardClick($event)"></app-keyboard>
-</ng-container>
+}
 
 <div class="rules">
   {{ 'RULES' | translate }}
