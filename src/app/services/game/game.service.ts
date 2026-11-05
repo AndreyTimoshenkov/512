@@ -11,7 +11,8 @@ export class GameService {
 
   shift = inject(ShiftService);
 
-  isGameOver(state: IGridCellState[]) {
+  isGameOver(board: IGridCellState[]) {
+    const state = cloneDeep(board);
     let rowsRight = this.shift.splitArray(state, EDirection.right);
     let rowsLeft = cloneDeep(rowsRight);
     rowsRight.forEach(line => this.shift.shiftRight(line));

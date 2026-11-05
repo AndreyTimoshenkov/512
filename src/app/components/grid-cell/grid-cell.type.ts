@@ -3,6 +3,20 @@ export interface IGridCellState{
   key: number;
 }
 
+export interface ITileMove {
+  from: number;
+  to: number;
+  value: number;
+}
+
+export interface ITileSlide {
+  value: number;
+  row: number;
+  column: number;
+  rows: number;
+  columns: number;
+}
+
 // export enum EGridCellColor {
 //   // support = '#587EDD',
 //   // error = '#E74326',
@@ -15,17 +29,17 @@ export interface IGridCellState{
 // };
 
 export enum EGridCellColor {
-  grey = '#808080',
-  two = '#6A8A13',
-  four = '#97BA1E',
-  eight = '#B4DA2E',
-  sixteen = '#DBF244',
-  thirtytwo = '#FFD700',
-  sixtyfour = '#FFB347',
-  onetwentyeight = '#FF8C42',
-  twofiftysix = '#FF6347',
-  fivetwelve = '#FF4500',
-  onektwentyfour = '#FF2400'
+  grey = '#2224ad',
+  two = '#d3f3ea',
+  four = '#a5eec6',
+  eight = '#d4f26b',
+  sixteen = '#fbe84b',
+  thirtytwo = '#ffca3a',
+  sixtyfour = '#ffa238',
+  onetwentyeight = '#ff7d45',
+  twofiftysix = '#ff5660',
+  fivetwelve = '#ff3d9a',
+  onektwentyfour = '#ffffff'
 }
 
 export type THexColor = `#${string}`;

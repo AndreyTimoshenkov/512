@@ -1,28 +1,58 @@
-<div class="play-area">
-  <app-locale-switcher (localeChanged)="onLocaleChanged($event)"></app-locale-switcher>
+<main class="play-area" appSwipe (swipe)="move($event)">
+  <h1 class="wordmark">512</h1>
 
-  <div class="scoreboard">
-    <div class="scoreboard_text">
-      <p>{{'TURN' | translate }}: {{ turn$$() }}</p>
-      <p>{{'SCORE' | translate }}: {{ score$$() }}</p>
-    </div>
-    <button (click)="restartGame()">{{ 'NEW_GAME' | translate }}</button>
+  <div class="tools" [attr.inert]="panelOpen() ? '' : null">
     <div class="help" (mouseenter)="instructionsOpen.set(true)" (mouseleave)="instructionsOpen.set(false)">
       <button class="info-button" type="button" aria-controls="game-instructions"
         [attr.aria-label]="'HOW_TO_PLAY' | translate" [attr.aria-expanded]="instructionsOpen()"
-        (focus)="instructionsOpen.set(true)" (click)="instructionsOpen.set(true)">i</button>
+        (focus)="instructionsOpen.set(true)" (click)="instructionsOpen.set(true)">?</button>
       @if (instructionsOpen()) {
         <div class="rules" id="game-instructions" role="note">{{ 'RULES' | translate }}</div>
       }
     </div>
+    <app-locale-switcher (localeChanged)="onLocaleChanged($event)"></app-locale-switcher>
+  </div>
+
+  <div class="scoreboard" [attr.inert]="panelOpen() ? '' : null">
+    <div class="scoreboard_text">
+      <p class="stat stat--score"><span>{{ 'SCORE' | translate }}</span>&ngsp;<strong>{{ score$$() }}</strong></p>
+      <p class="stat"><span>{{ 'TURN' | translate }}</span>&ngsp;<strong>{{ turn$$() }}</strong></p>
+    </div>
+    <button class="block-button" type="button" (click)="restartGame()">{{ 'NEW_GAME' | translate }}</button>
   </div>
 
   <div class="board-space">
-    <grid-container class="game" appSwipe (swipe)="move($event)">
-      @for(cell of state$$(); track $index;) {
-        <grid-cell bcgColour [bcg]="cell.value" [cellKey]="cell.key" [value]="cell.value" ></grid-cell>
-      }
-    </grid-container>
-  </div>
+    <div class="board">
+      <grid-container class="game" [style.--slide-time]="slideMs + 'ms'">
+        @for(cell of state$$(); track $index;) {
+          <grid-cell bcgColour [bcg]="landing().has(cell.key) ? 0 : cell.value" [cellKey]="cell.key"
+            [value]="landing().has(cell.key) ? 0 : cell.value"
+            [class.spawned]="spawned().has(cell.key)" [class.merged]="merged().has(cell.key)"></grid-cell>
+        }
+        @for(slide of slides(); track slide) {
+          <grid-cell class="slide" aria-hidden="true" bcgColour [bcg]="slide.value" [value]="slide.value"
+            [style.grid-row]="slide.row + 1 + ' / span 1'" [style.grid-column]="slide.column + 1 + ' / span 1'"
+            [style.--slide-rows]="slide.rows" [style.--slide-columns]="slide.columns"></grid-cell>
+        }
+      </grid-container>
 
-</div>
+      @if (isLost()) {
+        <app-game-panel [heading]="'GAME_OVER' | translate" [message]="('SCORE' | translate) + ': ' + score$$()">
+          <button class="block-button" type="button" (click)="startNewGame()">{{ 'NEW_GAME' | translate }}</button>
+        </app-game-panel>
+      } @else if (confirmOpen()) {
+        <app-game-panel [heading]="'NEW_GAME' | translate" [message]="'CONFIRM' | translate">
+          <button class="block-button block-button--quiet" type="button" (click)="closePanels()">{{ 'KEEP_PLAYING' | translate }}</button>
+          <button class="block-button" type="button" (click)="startNewGame()">{{ 'NEW_GAME' | translate }}</button>
+        </app-game-panel>
+      } @else if (wonOpen()) {
+        <app-game-panel [heading]="'WIN' | translate" [message]="('SCORE' | translate) + ': ' + score$$()">
+          <button class="block-button" type="button" (click)="closePanels()">{{ 'KEEP_PLAYING' | translate }}</button>
+          <button class="block-button block-button--quiet" type="button" (click)="startNewGame()">{{ 'NEW_GAME' | translate }}</button>
+        </app-game-panel>
+      }
+
+      <app-tile-ladder [best]="best()" role="img" [attr.aria-label]="('BEST_TILE' | translate) + ': ' + best()"></app-tile-ladder>
+    </div>
+  </div>
+</main>

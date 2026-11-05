@@ -28,3 +28,9 @@ export function colorMatcher(value: number): EGridCellColor {
       return EGridCellColor.onektwentyfour
   }
 }
+
+// A tile holds as many pips as its value: every doubling splits the pips along the shorter side.
+export function pipGrid(value: number): [number, number] {
+  const power = Math.log2(value || 1);
+  return [2 ** Math.ceil(power / 2), 2 ** Math.floor(power / 2)];
+}

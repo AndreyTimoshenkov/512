@@ -14,6 +14,9 @@ import { EDirection } from '../interfaces/general.types';
   },
 })
 export class SwipeDirective {
+  // Capturing the pointer would steal the click from these, so gestures never start on them.
+  private readonly controls = 'a, button, input, label, select, textarea';
+
   @Output() swipe = new EventEmitter<EDirection>();
 
   private start: { id: number; x: number; y: number } | null = null;
@@ -25,7 +28,7 @@ export class SwipeDirective {
       this.start = null;
       return;
     }
-    if (event.button !== 0 || this.start) { return; }
+    if (event.button !== 0 || this.start || (event.target as Element | null)?.closest?.(this.controls)) { return; }
     this.start = { id: event.pointerId, x: event.clientX, y: event.clientY };
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   }

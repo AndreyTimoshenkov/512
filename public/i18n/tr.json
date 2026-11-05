@@ -1,9 +1,12 @@
 {
   "NEW_GAME": "Yeni oyun",
-  "TURN": "Dönüş",
-  "SCORE": "Gol",
+  "TURN": "Tur",
+  "SCORE": "Puan",
   "RULES": "Nasıl oynanır: Taşları hareket ettirmek için kaydırın, sürükleyin veya ok tuşlarını kullanın. Aynı sayıya sahip taşlar birbirine değdiğinde birleşir. 512’ye ulaşın!",
-  "CONFIRM": "Yeni bir oyun başlatmak istediğinizden emin misiniz? Tüm ilerleme kaybolacak",
-  "GAME_OVER": "OYUN BİTTİ!!",
-  "HOW_TO_PLAY": "Nasıl oynanır"
+  "CONFIRM": "Yeni oyun başlatılsın mı? Mevcut ilerleme kaybolacak.",
+  "GAME_OVER": "Oyun bitti",
+  "HOW_TO_PLAY": "Nasıl oynanır",
+  "WIN": "512 yaptınız!",
+  "KEEP_PLAYING": "Devam et",
+  "BEST_TILE": "En iyi taş"
 }

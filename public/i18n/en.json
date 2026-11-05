@@ -3,7 +3,10 @@
   "TURN": "Turn",
   "SCORE": "Score",
   "RULES": "How to play: Swipe, drag, or use the arrow keys to move the tiles. Tiles with the same number merge when they touch. Add them up to reach 512!",
-  "CONFIRM": "Are you sure you want to start a new game? All progress will be lost",
-  "GAME_OVER": "GAME OVER!!",
-  "HOW_TO_PLAY": "How to play"
+  "CONFIRM": "Start a new game? Your current progress will be lost.",
+  "GAME_OVER": "Game over",
+  "HOW_TO_PLAY": "How to play",
+  "WIN": "You made 512!",
+  "KEEP_PLAYING": "Keep playing",
+  "BEST_TILE": "Best tile"
 }

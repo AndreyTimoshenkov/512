@@ -1,6 +1,7 @@
 
 import { Component, HostBinding, Input, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
-import { EGridCellColor, IGridCellState, TGridCellColor } from './grid-cell.type';
+import { IGridCellState } from './grid-cell.type';
+import { pipGrid } from './grid-cell.helper';
 @Component({
     selector: 'grid-cell',
     imports: [],
@@ -8,13 +9,14 @@ import { EGridCellColor, IGridCellState, TGridCellColor } from './grid-cell.type
     styleUrl: './grid-cell.component.less',
     changeDetection: ChangeDetectionStrategy.Eager,
     host: {
-        '[style.--cell-color]': 'cellColor$$()',
+        '[style.--pips-x]': 'pips[0]',
+        '[style.--pips-y]': 'pips[1]',
+        '[attr.data-digits]': 'digits',
     }
 })
 export class GridCellComponent {
   _cellState: IGridCellState = {key: 0, value: 0};
   cellState: WritableSignal<IGridCellState> = signal<IGridCellState>(null);
-  cellColor$$: WritableSignal<TGridCellColor> = signal<TGridCellColor>(EGridCellColor.grey);
 
   @Input() set value(value: number) {
     this._cellState.value = value;
@@ -22,6 +24,14 @@ export class GridCellComponent {
 
   get val() {
     return this._cellState.value;
+  }
+
+  get pips() {
+    return pipGrid(this.val);
+  }
+
+  get digits() {
+    return String(this.val).length;
   }
 
   @Input('cellKey') set key(value: number) {

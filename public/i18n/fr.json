@@ -1,9 +1,12 @@
 {
-  "NEW_GAME": "Nouveau jeu",
-  "TURN": "Tourner",
+  "NEW_GAME": "Nouvelle partie",
+  "TURN": "Tour",
   "SCORE": "Score",
   "RULES": "Comment jouer : balayez, faites glisser ou utilisez les touches fléchées pour déplacer les tuiles. Les tuiles de même valeur fusionnent lorsqu’elles se touchent. Additionnez-les pour atteindre 512 !",
-  "CONFIRM": "Êtes-vous sûr de vouloir commencer une nouvelle partie? Toute la progression sera perdue",
-  "GAME_OVER": "JEU TERMINÉ!!",
-  "HOW_TO_PLAY": "Comment jouer"
+  "CONFIRM": "Commencer une nouvelle partie ? La progression actuelle sera perdue.",
+  "GAME_OVER": "Partie terminée",
+  "HOW_TO_PLAY": "Comment jouer",
+  "WIN": "Vous avez fait 512 !",
+  "KEEP_PLAYING": "Continuer",
+  "BEST_TILE": "Meilleure tuile"
 }

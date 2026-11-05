@@ -1,10 +1,17 @@
 :host {
-  background: rgb(170, 139, 109);
-  padding: 0.25rem;
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
-  gap: 0.25rem;
+  gap: 2cqw;
+  padding: 2cqw;
   aspect-ratio: 1;
+  border-radius: 5cqw;
+  background: var(--board);
   container-type: inline-size;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
 }

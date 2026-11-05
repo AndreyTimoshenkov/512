@@ -1,8 +1,60 @@
+:root {
+  --ground: #2b2dc9;
+  --board: #17188c;
+  --ink: #12125e;
+  --chalk: #f4f5ff;
+  --chalk-soft: #c4c7fb;
+  --goal: #fbe84b;
+  --numeral: 'Unbounded Variable', 'Arial Black', sans-serif;
+  --text: 'Onest Variable', system-ui, sans-serif;
+}
+
 html, body {
   margin: 0;
   min-height: 100%;
 }
 
+body {
+  background: var(--ground);
+  color: var(--chalk);
+  font-family: var(--text);
+  -webkit-tap-highlight-color: transparent;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
+}
+
+:focus-visible {
+  outline: 3px solid var(--chalk);
+  outline-offset: 2px;
+}
+
+// Buttons are built like the tiles: a flat block on a hard bottom edge that sinks when pressed.
+.block-button {
+  --edge: 0.25rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 0.75rem;
+  background: var(--goal);
+  box-shadow: 0 var(--edge) 0 color-mix(in srgb, var(--goal) 60%, var(--ink));
+  color: var(--ink);
+  font: 700 1rem/1.1 var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:active {
+    transform: translateY(var(--edge));
+    box-shadow: none;
+  }
+
+  &--quiet {
+    --goal: var(--chalk);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+  }
 }

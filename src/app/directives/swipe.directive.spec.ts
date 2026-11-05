@@ -45,6 +45,17 @@ describe('SwipeDirective', () => {
     expect(emit).not.toHaveBeenCalled();
   });
 
+  it('leaves gestures that start on a control to that control', () => {
+    const emit = vi.spyOn(directive.swipe, 'emit');
+    host.setPointerCapture.mockClear();
+    const button = document.createElement('button');
+    button.append(document.createElement('span'));
+    directive.onPointerDown(pointer(0, 0, { target: button.firstChild }));
+    directive.onPointerUp(pointer(100, 0));
+    expect(host.setPointerCapture).not.toHaveBeenCalled();
+    expect(emit).not.toHaveBeenCalled();
+  });
+
   it('ignores release from another pointer while preserving the active gesture', () => {
     const emit = vi.spyOn(directive.swipe, 'emit');
     directive.onPointerDown(pointer(0, 0));
