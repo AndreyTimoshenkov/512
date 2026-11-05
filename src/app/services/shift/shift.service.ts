@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IGridCellState, ITileMove } from '../../components/grid-cell/grid-cell.type';
-import { EDirection } from '../../interfaces/general.types';
+import { DEFAULT_GRID_SIZE, EDirection } from '../../interfaces/general.types';
 
 @Injectable({
   providedIn: 'root'
@@ -12,27 +12,28 @@ export class ShiftService {
     return array[randomNum];
   }
 
-  splitArray(state: IGridCellState[], direction: EDirection): IGridCellState[][] {
-    const result: IGridCellState[][] = [[], [], [], []];
+  splitArray(state: IGridCellState[], direction: EDirection, size: number = DEFAULT_GRID_SIZE): IGridCellState[][] {
+    const result = Array.from({ length: size }, (): IGridCellState[] => []);
 
     state.forEach((cell) => {
       const index =
         direction === EDirection.right || direction === EDirection.left
-          ? Math.floor((cell.key ?? 0) / 4)
-          : Math.floor((cell.key ?? 0) % 4);
+          ? Math.floor((cell.key ?? 0) / size)
+          : Math.floor((cell.key ?? 0) % size);
       result[index].push(cell);
     });
 
     return result;
   }
 
-  //@ts-ignore
+  // Each pass moves a tile one cell, so crossing the line takes one pass fewer than its length.
   shiftArray(list: IGridCellState[], direction: EDirection): [IGridCellState[], number] {
-   if (direction === EDirection.right || direction === EDirection.down) {
-    return this.shiftRight(...this.shiftRight(...this.shiftRight(list)))
-   } else if (direction === EDirection.up || direction === EDirection.left) {
-    return this.shiftLeft(...this.shiftLeft(...this.shiftLeft(list)));
-   }
+    const forward = direction === EDirection.right || direction === EDirection.down;
+    let result: [IGridCellState[], number] = [list, 0];
+    for (let pass = 1; pass < list.length; pass++) {
+      result = forward ? this.shiftRight(...result) : this.shiftLeft(...result);
+    }
+    return result;
   }
 
   // Tiles keep their order when sliding, so the old tiles fill the landed ones in turn until the values add up.

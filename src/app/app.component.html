@@ -1,4 +1,4 @@
-<main class="play-area" appSwipe (swipe)="move($event)">
+<main class="play-area" appSwipe (swipe)="move($event)" (tap)="onTap($event)">
   <h1 class="wordmark">512</h1>
 
   <div class="tools" [attr.inert]="panelOpen() ? '' : null">
@@ -7,7 +7,7 @@
         [attr.aria-label]="'HOW_TO_PLAY' | translate" [attr.aria-expanded]="instructionsOpen()"
         (focus)="instructionsOpen.set(true)" (click)="instructionsOpen.set(true)">?</button>
       @if (instructionsOpen()) {
-        <div class="rules" id="game-instructions" role="note">{{ 'RULES' | translate }}</div>
+        <div class="rules" id="game-instructions" role="note">{{ 'RULES' | translate: { target: target$$() } }} {{ 'RULES_PERKS' | translate }}</div>
       }
     </div>
     <app-locale-switcher (localeChanged)="onLocaleChanged($event)"></app-locale-switcher>
@@ -21,13 +21,21 @@
     <button class="block-button" type="button" (click)="restartGame()">{{ 'NEW_GAME' | translate }}</button>
   </div>
 
+  @let perkHint = hint();
+  <app-perk-tray [attr.inert]="perksLocked() ? '' : null" [inventory]="perks$$().inventory" [available]="availablePerks()"
+    [active]="targetPerk()" [doubling]="perks$$().doubleMoves > 0" [saved]="!!perks$$().save" (use)="usePerk($event)"
+    [hint]="perkHint ? (perkHint.key | translate: { name: (perkHint.name ?? '') | translate, moves: perkHint.moves, tile: perkHint.tile }) : ''"></app-perk-tray>
+
   <div class="board-space">
     <div class="board">
-      <grid-container class="game" [style.--slide-time]="slideMs + 'ms'">
+      <grid-container class="game" [style.--grid-size]="size()" [style.--slide-time]="slideMs + 'ms'">
         @for(cell of state$$(); track $index;) {
           <grid-cell bcgColour [bcg]="landing().has(cell.key) ? 0 : cell.value" [cellKey]="cell.key"
             [value]="landing().has(cell.key) ? 0 : cell.value"
-            [class.spawned]="spawned().has(cell.key)" [class.merged]="merged().has(cell.key)"></grid-cell>
+            [class.spawned]="spawned().has(cell.key)" [class.merged]="merged().has(cell.key)"
+            [class.pickable]="pickable().has(cell.key)" [class.picked]="swapFirst() === cell.key" [attr.data-key]="cell.key"
+            [attr.role]="pickable().has(cell.key) ? 'button' : null" [attr.tabindex]="pickable().has(cell.key) ? 0 : null"
+            (keydown.enter)="pickTile(cell.key)" (keydown.space)="pickTile(cell.key)"></grid-cell>
         }
         @for(slide of slides(); track slide) {
           <grid-cell class="slide" aria-hidden="true" bcgColour [bcg]="slide.value" [value]="slide.value"
@@ -36,23 +44,29 @@
         }
       </grid-container>
 
-      @if (isLost()) {
-        <app-game-panel [heading]="'GAME_OVER' | translate" [message]="('SCORE' | translate) + ': ' + score$$()">
-          <button class="block-button" type="button" (click)="startNewGame()">{{ 'NEW_GAME' | translate }}</button>
+      @if (isLost() && !targetPerk()) {
+        <app-game-panel [heading]="'GAME_OVER' | translate" [modal]="!canRescue()"
+          [message]="('SCORE' | translate) + ': ' + score$$() + (canRescue() ? '. ' + ('PERK_RESCUE' | translate) : '')">
+          <app-game-setup [(target)]="setupTarget" [(size)]="setupSize"></app-game-setup>
+          @if (perks$$().save) {
+            <button class="block-button" type="button" (click)="loadSave()">{{ 'LOAD_SAVE' | translate }}</button>
+          }
+          <button class="block-button" [class.block-button--quiet]="perks$$().save" type="button" (click)="startNewGame()">{{ 'NEW_GAME' | translate }}</button>
         </app-game-panel>
       } @else if (confirmOpen()) {
         <app-game-panel [heading]="'NEW_GAME' | translate" [message]="'CONFIRM' | translate">
+          <app-game-setup [(target)]="setupTarget" [(size)]="setupSize"></app-game-setup>
           <button class="block-button block-button--quiet" type="button" (click)="closePanels()">{{ 'KEEP_PLAYING' | translate }}</button>
           <button class="block-button" type="button" (click)="startNewGame()">{{ 'NEW_GAME' | translate }}</button>
         </app-game-panel>
       } @else if (wonOpen()) {
-        <app-game-panel [heading]="'WIN' | translate" [message]="('SCORE' | translate) + ': ' + score$$()">
+        <app-game-panel [heading]="'WIN' | translate: { target: target$$() }" [message]="('SCORE' | translate) + ': ' + score$$()">
           <button class="block-button" type="button" (click)="closePanels()">{{ 'KEEP_PLAYING' | translate }}</button>
-          <button class="block-button block-button--quiet" type="button" (click)="startNewGame()">{{ 'NEW_GAME' | translate }}</button>
+          <button class="block-button block-button--quiet" type="button" (click)="restartGame()">{{ 'NEW_GAME' | translate }}</button>
         </app-game-panel>
       }
 
-      <app-tile-ladder [best]="best()" role="img" [attr.aria-label]="('BEST_TILE' | translate) + ': ' + best()"></app-tile-ladder>
+      <app-tile-ladder [best]="best()" [target]="ladderEnd()" [rewards]="rewardTiles()" role="img" [attr.aria-label]="('BEST_TILE' | translate) + ': ' + best()"></app-tile-ladder>
     </div>
   </div>
 </main>

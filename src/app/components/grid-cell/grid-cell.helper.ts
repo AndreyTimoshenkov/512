@@ -24,8 +24,10 @@ export function colorMatcher(value: number): EGridCellColor {
       return EGridCellColor.fivetwelve;
     case 1024:
       return EGridCellColor.onektwentyfour;
+    case 2048:
+      return EGridCellColor.twentyfortyeight;
     default:
-      return EGridCellColor.onektwentyfour
+      return EGridCellColor.fourtyninetysix
   }
 }
 

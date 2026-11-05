@@ -1,0 +1,64 @@
+:host {
+  display: grid;
+  gap: 0.3rem;
+  width: min(100%, 19rem);
+}
+
+fieldset {
+  display: flow-root;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+// Sits beside its choices so the rows stay short enough for the panel on small phones.
+legend {
+  float: left;
+  width: 4rem;
+  padding: 0;
+  color: var(--chalk-soft);
+  font-size: 0.875rem;
+  line-height: 2.0625rem;
+  text-align: left;
+}
+
+.choices {
+  display: grid;
+  margin-left: 4rem;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 0.25rem;
+}
+
+label {
+  position: relative;
+  cursor: pointer;
+}
+
+input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+span {
+  display: block;
+  padding: 0.55rem 0.25rem;
+  border-radius: 0.6rem;
+  background: rgb(255 255 255 / 0.12);
+  font: 700 0.8125rem/1 var(--numeral);
+  text-align: center;
+}
+
+input:checked + span {
+  background: var(--chalk);
+  color: var(--ink);
+}
+
+input:focus-visible + span {
+  outline: 3px solid var(--chalk);
+  outline-offset: 2px;
+}

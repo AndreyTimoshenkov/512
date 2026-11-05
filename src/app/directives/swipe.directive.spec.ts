@@ -45,6 +45,17 @@ describe('SwipeDirective', () => {
     expect(emit).not.toHaveBeenCalled();
   });
 
+  it('reports short presses as taps where they ended, and swipes as swipes only', () => {
+    const tap = vi.spyOn(directive.tap, 'emit');
+    directive.onPointerDown(pointer(10, 20));
+    directive.onPointerUp(pointer(12, 21));
+    expect(tap).toHaveBeenCalledExactlyOnceWith({ x: 12, y: 21 });
+
+    directive.onPointerDown(pointer(0, 0));
+    directive.onPointerUp(pointer(100, 0));
+    expect(tap).toHaveBeenCalledOnce();
+  });
+
   it('leaves gestures that start on a control to that control', () => {
     const emit = vi.spyOn(directive.swipe, 'emit');
     host.setPointerCapture.mockClear();

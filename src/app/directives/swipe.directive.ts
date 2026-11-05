@@ -18,6 +18,8 @@ export class SwipeDirective {
   private readonly controls = 'a, button, input, label, select, textarea';
 
   @Output() swipe = new EventEmitter<EDirection>();
+  // The captured pointer keeps clicks from reaching what's under it, so short presses are reported here.
+  @Output() tap = new EventEmitter<{ x: number; y: number }>();
 
   private start: { id: number; x: number; y: number } | null = null;
   private readonly threshold = 30;
@@ -44,9 +46,11 @@ export class SwipeDirective {
 
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < this.threshold || Math.abs(dx) === Math.abs(dy)) {
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < this.threshold) {
+      this.tap.emit({ x: event.clientX, y: event.clientY });
       return;
     }
+    if (Math.abs(dx) === Math.abs(dy)) { return; }
     this.swipe.emit(Math.abs(dx) > Math.abs(dy)
       ? (dx > 0 ? EDirection.right : EDirection.left)
       : (dy > 0 ? EDirection.down : EDirection.up));

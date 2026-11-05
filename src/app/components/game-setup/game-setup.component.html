@@ -1,0 +1,23 @@
+<fieldset>
+  <legend>{{ 'TARGET' | translate }}</legend>
+  <div class="choices">
+    @for (option of targets; track option) {
+      <label>
+        <input type="radio" name="target" [value]="option" [checked]="option === target()" (change)="target.set(option)">
+        <span>{{ option }}</span>
+      </label>
+    }
+  </div>
+</fieldset>
+
+<fieldset>
+  <legend>{{ 'GRID' | translate }}</legend>
+  <div class="choices">
+    @for (option of sizes; track option) {
+      <label>
+        <input type="radio" name="size" [value]="option" [checked]="option === size()" (change)="size.set(option)">
+        <span>{{ option }}×{{ option }}</span>
+      </label>
+    }
+  </div>
+</fieldset>

@@ -1,0 +1,20 @@
+<div class="perks" role="group" [attr.aria-label]="'PERKS' | translate">
+  @for (perk of perks; track perk) {
+    <button class="perk" type="button" [class.owned]="inventory[perk] > 0" [class.ready]="available.has(perk)"
+      [class.active]="active === perk || (doubling && perk === double) || (saved && perk === save)"
+      [attr.aria-disabled]="!available.has(perk)" [attr.aria-pressed]="active === perk"
+      [attr.aria-label]="('PERK_' + perk | translate) + ': ' + inventory[perk]" [title]="'PERK_' + perk + '_INFO' | translate"
+      (click)="use.emit(perk)">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        @for (layer of art[perk]; track $index) {
+          <path [attr.d]="layer.d" [attr.fill]="layer.fill ?? 'none'" [class.plain]="layer.style === 'plain'"
+            [class.line]="layer.style === 'line'" [class.shine]="layer.style === 'line' && layer.fill"/>
+        }
+      </svg>
+      @if (inventory[perk] > 0) {
+        <span class="count">{{ inventory[perk] }}</span>
+      }
+    </button>
+  }
+</div>
+<p class="hint" aria-live="polite">{{ hint }}</p>

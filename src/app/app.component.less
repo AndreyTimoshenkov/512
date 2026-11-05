@@ -8,6 +8,7 @@
   grid-template:
     'brand tools' auto
     'stats stats' auto
+    'perks perks' auto
     'board board' minmax(0, 1fr) / 1fr auto;
   gap: 0.75rem 1rem;
   align-items: center;
@@ -115,7 +116,8 @@
   .play-area {
     grid-template:
       'brand board' auto
-      'stats board' minmax(0, 1fr)
+      'stats board' auto
+      'perks board' minmax(0, 1fr)
       'tools board' auto / 15rem minmax(0, 1fr);
     gap: 1.5rem 3rem;
     align-items: start;

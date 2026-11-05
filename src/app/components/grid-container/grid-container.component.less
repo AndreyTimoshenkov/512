@@ -1,8 +1,9 @@
 :host {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, 1fr));
+  --tile-scale: calc(4 / var(--grid-size));
+  grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--grid-size), minmax(0, 1fr));
   gap: 2cqw;
   padding: 2cqw;
   aspect-ratio: 1;

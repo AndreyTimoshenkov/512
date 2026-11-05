@@ -1,3 +1,4 @@
 @for (step of steps; track step) {
-  <span class="step" [class.reached]="step <= best" [style.--tile]="colour(step)">{{ step }}</span>
+  <span class="step" [class.reached]="step <= best" [class.reward]="step > best && rewards.includes(step)"
+    [style.--tile]="colour(step)">{{ step }}</span>
 }

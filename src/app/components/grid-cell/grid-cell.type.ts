@@ -39,7 +39,9 @@ export enum EGridCellColor {
   onetwentyeight = '#ff7d45',
   twofiftysix = '#ff5660',
   fivetwelve = '#ff3d9a',
-  onektwentyfour = '#ffffff'
+  onektwentyfour = '#d65cf2',
+  twentyfortyeight = '#a066ff',
+  fourtyninetysix = '#7f78ff'
 }
 
 export type THexColor = `#${string}`;

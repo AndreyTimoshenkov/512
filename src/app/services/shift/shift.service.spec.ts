@@ -24,6 +24,15 @@ describe('ShiftService', () => {
     expect(service.shiftArray(row([2, 4, 8, 16]), EDirection.down)[1]).toBe(0);
   });
 
+  it('splits and slides lines of any length', () => {
+    const state = Array.from({ length: 36 }, (_, key) => ({ key, value: key === 6 ? 2 : 0 }));
+    const rows = service.splitArray(state, EDirection.right, 6);
+    expect(rows.length).toBe(6);
+    expect(rows[1].map(cell => cell.key)).toEqual([6, 7, 8, 9, 10, 11]);
+    expect(service.splitArray(state, EDirection.down, 6)[0].map(cell => cell.key)).toEqual([0, 6, 12, 18, 24, 30]);
+    expect(service.shiftArray(rows[1], EDirection.right)[0].map(cell => cell.value)).toEqual([0, 0, 0, 0, 0, 2]);
+  });
+
   it('counts each step of a chain merge', () => {
     const row = [2, 2, 4, 0].map((value, key) => ({ key, value }));
     const [line, score] = service.shiftArray(row, EDirection.left);

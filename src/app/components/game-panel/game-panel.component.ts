@@ -7,7 +7,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, inject, 
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         'role': 'alertdialog',
-        'aria-modal': 'true',
+        '[attr.aria-modal]': 'modal',
         '[attr.aria-label]': 'heading',
     }
 })
@@ -17,6 +17,7 @@ export class GamePanelComponent implements AfterViewInit, OnDestroy {
 
   @Input() heading = '';
   @Input() message = '';
+  @Input() modal = true;
 
   ngAfterViewInit(): void {
     this.previousFocus = this.host.nativeElement.ownerDocument.activeElement;
