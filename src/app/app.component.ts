@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, linkedSignal, signal, WritableSignal } from '@angular/core';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
-import { IGridCellState, ITileMove, ITileSlide, ITileStage } from './components/grid-cell/grid-cell.type';
+import { IGridCellState, ITileExit, ITileMove, ITileSlide, ITileStage } from './components/grid-cell/grid-cell.type';
 import { DEFAULT_GRID_SIZE, DEFAULT_TARGET, EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
@@ -15,10 +15,13 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TCodes } from './components/locale-switcher/locale.types';
 import { GamePanelComponent } from './components/game-panel/game-panel.component';
 import { GameSetupComponent } from './components/game-setup/game-setup.component';
+import { FIRST_PLAY_STEPS, IIntroStep, IntroComponent, perkSteps } from './components/intro/intro.component';
 import { TileLadderComponent } from './components/tile-ladder/tile-ladder.component';
+import { PerkEffectComponent } from './components/perk-effect/perk-effect.component';
 import { PerkTrayComponent } from './components/perk-tray/perk-tray.component';
+import { RescuePerksComponent } from './components/rescue-perks/rescue-perks.component';
 import { PerksService } from './services/perks/perks.service';
-import { DOUBLE_MOVES, EPerk, IPerkHint, IPerkState, PERKS, TILE_PERKS } from './interfaces/perk.types';
+import { DOUBLE_MOVES, EPerk, IPerkEffect, IPerkHint, IPerkState, PERKS, TILE_PERKS, TPerkEffect } from './interfaces/perk.types';
 @Component({
     selector: 'app-root',
     imports: [
@@ -29,8 +32,11 @@ import { DOUBLE_MOVES, EPerk, IPerkHint, IPerkState, PERKS, TILE_PERKS } from '.
     LocaleSwitcherComponent,
     GamePanelComponent,
     GameSetupComponent,
+    IntroComponent,
     TileLadderComponent,
+    PerkEffectComponent,
     PerkTrayComponent,
+    RescuePerksComponent,
     TranslateModule
 ],
     templateUrl: './app.component.html',
@@ -39,6 +45,7 @@ import { DOUBLE_MOVES, EPerk, IPerkHint, IPerkState, PERKS, TILE_PERKS } from '.
 })
 export class AppComponent implements AfterViewInit {
   private perks = inject(PerksService);
+  readonly sweep = EPerk.sweep;
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
   score$$: WritableSignal<number> = signal(0);
@@ -51,10 +58,14 @@ export class AppComponent implements AfterViewInit {
   instructionsOpen = signal(false);
   confirmOpen = signal(false);
   wonOpen = signal(false);
+  intro = signal<IIntroStep[]>([]);
+  introStep = signal(0);
+  introOpen = computed(() => this.intro().length > 0);
+  introShown = computed<IIntroStep | undefined>(() => this.intro()[this.introStep()]);
   spawned = signal(new Set<number>());
   merged = signal(new Set<number>());
   isLost = computed(() => this.state$$().length > 0 && this.game.isGameOver(this.state$$(), this.size()));
-  panelOpen = computed(() => this.confirmOpen() || this.wonOpen() || this.isLost());
+  panelOpen = computed(() => this.introOpen() || this.confirmOpen() || this.wonOpen() || this.isLost());
   best = computed(() => Math.max(0, ...this.state$$().map(cell => cell.value)));
   // The ladder ends at the target until the player climbs past it.
   ladderEnd = computed(() => Math.max(this.target$$(), this.best()));
@@ -70,8 +81,11 @@ export class AppComponent implements AfterViewInit {
     const perk = this.targetPerk();
     return perk ? this.perks.pickable(perk, this.state$$(), this.size(), this.swapFirst()) : new Set<number>();
   });
-  canRescue = computed(() => this.isLost() && this.availablePerks().size > 0);
-  perksLocked = computed(() => this.confirmOpen() || this.wonOpen() || (this.isLost() && !this.canRescue()));
+  // Choosing to end the game only holds for this loss; any way out of it clears the choice.
+  gaveUp = linkedSignal({ source: this.isLost, computation: () => false });
+  // A lost game with a way back stays open until the player uses it or gives up.
+  canRescue = computed(() => this.isLost() && !this.gaveUp() && (this.availablePerks().size > 0 || !!this.perks$$().save));
+  perksLocked = computed(() => this.introOpen() || this.confirmOpen() || this.wonOpen() || (this.isLost() && !this.canRescue()));
   hint = computed<IPerkHint | null>(() => {
     const moves = this.perks$$().doubleMoves;
     return this.notice() ?? (moves ? { key: 'PERK_DOUBLE_ACTIVE', moves } : null);
@@ -89,8 +103,15 @@ export class AppComponent implements AfterViewInit {
   readonly chainPace = 0.75;
   // A slide covers this many cells in slideMs. Longer ones, on bigger boards, take longer rather than go faster.
   readonly slideCells = 3;
+  // Perks that move tiles play slower than a move, so the player can follow where everything went.
+  readonly perkPace = 2;
+  readonly effectMs = 700;
   pace = signal(1);
   slideTime = signal(this.slideMs);
+  // At most one, but held in a list so that a new effect is a new element and its animation restarts.
+  effects = signal<IPerkEffect[]>([]);
+  exits = signal<ITileExit[]>([]);
+  private effectTimer?: ReturnType<typeof setTimeout>;
   private timers: ReturnType<typeof setTimeout>[] = [];
 
   constructor(
@@ -115,6 +136,8 @@ export class AppComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.startGame();
+    // Going by the turn too means a player who left without moving still gets the intro, and one mid-game doesn't.
+    if (!this.ls.getIntroSeen() && this.turn$$() === 1) { this.showIntro(FIRST_PLAY_STEPS); }
     const code = this.ls.getLocale()?.slice(0, 2);
     this.translate.use(code || 'ru');
   }
@@ -137,6 +160,7 @@ export class AppComponent implements AfterViewInit {
   onKeyDown(event: KeyboardEvent) {
     if (event.key === 'Escape') {
       this.instructionsOpen.set(false);
+      this.finishIntro();
       this.closePanels();
       this.cancelTarget();
     }
@@ -195,6 +219,7 @@ export class AppComponent implements AfterViewInit {
     });
     if (rewards.length) {
       this.notice.set({ key: 'PERK_EARNED', tile: best });
+      this.showIntro(perkSteps(rewards, best));
     }
   }
 
@@ -214,6 +239,7 @@ export class AppComponent implements AfterViewInit {
     } else if (perk === EPerk.double) {
       this.perks$$.update(perks => ({ ...this.spent(perks, perk), doubleMoves: DOUBLE_MOVES }));
       this.notice.set(null);
+      this.playEffect(perk);
     } else if (perk === EPerk.save) {
       this.saveGame();
     } else if (perk === EPerk.sweep) {
@@ -240,12 +266,38 @@ export class AppComponent implements AfterViewInit {
     return { ...perks, inventory: { ...perks.inventory, [perk]: perks.inventory[perk] - 1 } };
   }
 
-  private applyPerk(perk: EPerk, next: IGridCellState[], changed: number[] = []) {
-    this.animate([]);
+  private applyPerk(perk: EPerk, next: IGridCellState[], changed: number[] = [], cell?: number) {
+    const previous = this.state$$();
+    const moves = perk === EPerk.swap || perk === EPerk.shuffle ? this.perks.travel(previous, next) : [];
+    this.animate(moves.length ? [{ state: next, moves }] : [], this.perkPace);
     this.merged.set(new Set(changed));
     this.state$$.set(next);
     this.perks$$.update(perks => this.spent(perks, perk));
     this.notice.set(null);
+    // Tiles that travelled are only somewhere else; the others that left the board are gone for good.
+    this.playEffect(perk, cell, moves.length ? [] : previous.filter((tile, index) => tile.value && !next[index].value));
+  }
+
+  private playEffect(effect: TPerkEffect, cell?: number, removed: IGridCellState[] = []) {
+    const size = this.size();
+    clearTimeout(this.effectTimer);
+    this.effects.set([{ effect, cell }]);
+    this.exits.set(removed.map(({ key, value }) => ({ value, row: Math.floor(key / size), column: key % size })));
+    this.effectTimer = setTimeout(() => this.clearEffect(), this.effectMs);
+  }
+
+  private clearEffect() {
+    clearTimeout(this.effectTimer);
+    this.effects.set([]);
+    this.exits.set([]);
+  }
+
+  // Going back in time gets the same flourish either way; the tiles that differ pop into place.
+  private playRewind(effect: TPerkEffect, previous: IGridCellState[]) {
+    const state = this.state$$();
+    this.animate([]);
+    this.merged.set(new Set(state.filter((cell, index) => cell.value && cell.value !== previous[index]?.value).map(cell => cell.key)));
+    this.playEffect(effect);
   }
 
   private saveGame() {
@@ -253,24 +305,28 @@ export class AppComponent implements AfterViewInit {
     const save = { state: cloneDeep(this.state$$()), score: this.score$$(), turn: this.turn$$(), perks: omit(perks, 'undo', 'save') };
     this.perks$$.set({ ...perks, save });
     this.notice.set({ key: 'PERK_SAVE_DONE' });
+    this.playEffect(EPerk.save);
   }
 
   loadSave() {
     const save = this.perks$$().save;
     if (!save) { return; }
 
+    const previous = this.state$$();
     this.clearAnimation();
     this.state$$.set(save.state);
     this.score$$.set(save.score);
     this.turn$$.set(save.turn);
     this.perks$$.set({ ...save.perks, undo: null, save: null });
     this.notice.set({ key: 'PERK_SAVE_LOADED' });
+    this.playRewind('LOAD', previous);
   }
 
   private undo() {
     const snapshot = this.perks$$().undo;
     if (!snapshot) { return; }
 
+    const previous = this.state$$();
     this.clearAnimation();
     this.wonOpen.set(false);
     this.notice.set(null);
@@ -285,6 +341,7 @@ export class AppComponent implements AfterViewInit {
       nextSpawn: snapshot.spawn,
       undo: null,
     });
+    this.playRewind(EPerk.undo, previous);
   }
 
   onTap({ x, y }: { x: number; y: number }) {
@@ -300,17 +357,17 @@ export class AppComponent implements AfterViewInit {
     const state = this.state$$();
     if (perk === EPerk.hammer) {
       this.cancelTarget();
-      this.applyPerk(perk, this.perks.hammer(state, key));
+      this.applyPerk(perk, this.perks.hammer(state, key), [], key);
     } else if (perk === EPerk.upgrade) {
       this.cancelTarget();
-      this.applyPerk(perk, this.perks.upgrade(state, key), [key]);
+      this.applyPerk(perk, this.perks.upgrade(state, key), [key], key);
     } else if (this.swapFirst() === null) {
       this.swapFirst.set(key);
       this.notice.set({ key: 'PERK_SWAP_PICK_SECOND' });
     } else {
       const first = this.swapFirst()!;
       this.cancelTarget();
-      this.applyPerk(perk, this.perks.swap(state, first, key), [first, key]);
+      this.applyPerk(perk, this.perks.swap(state, first, key), [first, key], key);
     }
   }
 
@@ -321,9 +378,9 @@ export class AppComponent implements AfterViewInit {
     this.notice.set(null);
   }
 
-  private animate(stages: ITileStage[]) {
+  private animate(stages: ITileStage[], pace = stages.length > 1 ? this.chainPace : 1) {
     this.stopStages();
-    this.pace.set(stages.length > 1 ? this.chainPace : 1);
+    this.pace.set(pace);
     if (stages.length && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
       this.playStage(stages, 0);
       return;
@@ -375,6 +432,7 @@ export class AppComponent implements AfterViewInit {
     this.frame.set(null);
     this.slides.set([]);
     this.landing.set(new Set());
+    this.clearEffect();
   }
 
   private clearAnimation() {
@@ -455,6 +513,17 @@ export class AppComponent implements AfterViewInit {
     this.ls.clear();
     this.target$$.set(target);
     this.startGame(size);
+  }
+
+  private showIntro(steps: IIntroStep[]) {
+    this.introStep.set(0);
+    this.intro.set(steps);
+  }
+
+  finishIntro() {
+    if (!this.introOpen()) { return; }
+    this.intro.set([]);
+    this.ls.saveIntroSeen();
   }
 
   closePanels() {

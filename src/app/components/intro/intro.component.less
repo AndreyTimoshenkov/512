@@ -1,0 +1,159 @@
+.media {
+  display: grid;
+  justify-items: center;
+  gap: clamp(0.4rem, 2.6cqw, 0.75rem);
+  width: 100%;
+}
+
+// A one-row slice of the board, sized so the real tiles keep their proportions.
+.demo {
+  --gap: 2cqw;
+  --tile-scale: 1;
+  --across: calc(3 * (100% + var(--gap)));
+  --loop: 2.6s;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gap);
+  width: min(100%, 11rem);
+  container-type: inline-size;
+}
+
+.cell {
+  aspect-ratio: 1;
+  border-radius: 3.4cqw;
+  background: rgb(255 255 255 / 0.09);
+}
+
+// Every animated part rests on its final state, so with reduced motion the demo still shows the outcome.
+.tile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc((100% - 3 * var(--gap)) / 4);
+  aspect-ratio: 1;
+}
+
+.tile--mover {
+  transform: translateX(var(--across));
+  animation: travel var(--loop) ease-in-out infinite;
+}
+
+.tile--rest {
+  right: 0;
+  left: auto;
+}
+
+.tile--merged {
+  right: 0;
+  left: auto;
+  z-index: 1;
+  animation: pop var(--loop) ease-out infinite;
+}
+
+.demo--merge {
+  .tile--mover, .tile--rest {
+    visibility: hidden;
+    animation-name: travel, vanish;
+    animation-duration: var(--loop);
+    animation-iteration-count: infinite;
+  }
+
+  .tile--rest {
+    animation-name: vanish;
+  }
+}
+
+.finger {
+  position: absolute;
+  top: 50%;
+  left: 12.5%;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: -0.75rem;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.65);
+  opacity: 0;
+  animation: swipe var(--loop) ease-in-out infinite;
+}
+
+.perks {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.perk {
+  width: clamp(2.5rem, 13cqw, 4.5rem);
+}
+
+.dots {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.25);
+
+  &--on {
+    background: var(--goal);
+  }
+}
+
+@keyframes travel {
+  0%, 20% {
+    transform: none;
+  }
+  50%, 100% {
+    transform: translateX(var(--across));
+  }
+}
+
+@keyframes swipe {
+  0%, 8% {
+    opacity: 0;
+    transform: none;
+  }
+  20% {
+    opacity: 1;
+    transform: none;
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(75cqw);
+  }
+  60%, 100% {
+    opacity: 0;
+    transform: translateX(75cqw);
+  }
+}
+
+// The two 2s stay on screen until they meet, then hand over to the 4.
+@keyframes vanish {
+  0%, 49.9% {
+    visibility: visible;
+  }
+  50%, 100% {
+    visibility: hidden;
+  }
+}
+
+@keyframes pop {
+  0%, 49.9% {
+    opacity: 0;
+    transform: none;
+  }
+  50% {
+    opacity: 1;
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.14);
+  }
+  70%, 100% {
+    transform: none;
+  }
+}

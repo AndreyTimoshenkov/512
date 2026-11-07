@@ -1,0 +1,12 @@
+@for (perk of perks(); track perk) {
+  <button class="perk" type="button" [title]="'PERK_' + perk + '_INFO' | translate" (click)="use.emit(perk)">
+    <app-perk-icon [perk]="perk"></app-perk-icon>
+    <span>{{ 'PERK_' + perk | translate }}</span>
+  </button>
+}
+@if (saved()) {
+  <button class="perk perk--save" type="button" (click)="reload.emit()">
+    <app-perk-icon [perk]="save"></app-perk-icon>
+    <span>{{ 'LOAD_SAVE' | translate }}</span>
+  </button>
+}

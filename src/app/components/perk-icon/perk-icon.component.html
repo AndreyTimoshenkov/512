@@ -1,0 +1,6 @@
+<svg viewBox="0 0 32 32" aria-hidden="true">
+  @for (layer of layers(); track $index) {
+    <path [attr.d]="layer.d" [attr.fill]="layer.fill ?? 'none'" [class.plain]="layer.style === 'plain'"
+      [class.line]="layer.style === 'line'" [class.shine]="layer.style === 'line' && layer.fill"/>
+  }
+</svg>

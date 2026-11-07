@@ -4,6 +4,24 @@ import { PerksService } from './perks.service';
 import { GameService } from '../game/game.service';
 import { EPerk, PERKS } from '../../interfaces/perk.types';
 
+describe('PerksService travel', () => {
+  const board = (values: number[]) => values.map((value, key) => ({ key, value }));
+  const service = () => TestBed.inject(PerksService);
+
+  it('pairs tiles by value and leaves the ones that stayed', () => {
+    expect(service().travel(board([2, 4, 8, 0]), board([4, 2, 8, 0]))).toEqual([
+      { from: 1, to: 0, value: 4 },
+      { from: 0, to: 1, value: 2 },
+    ]);
+  });
+
+  it('uses each old tile once, whatever the duplicates', () => {
+    const moves = service().travel(board([2, 2, 0, 0, 4, 0]), board([0, 0, 2, 2, 0, 4]));
+    expect(moves.map(move => move.from).sort()).toEqual([0, 1, 4]);
+    expect(moves.map(move => move.to).sort()).toEqual([2, 3, 5]);
+  });
+});
+
 describe('PerksService', () => {
   let service: PerksService;
   const board = (values: number[]) => values.map((value, key) => ({ key, value }));

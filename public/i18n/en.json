@@ -39,5 +39,19 @@
   "PERK_LOCKED": "{{name}} Reach {{tile}} to earn one.",
   "PERK_EARNED": "New perks for reaching {{tile}}!",
   "PERK_DOUBLE_ACTIVE": "Double points: {{moves}} left",
-  "PERK_RESCUE": "Use a perk to keep going."
+  "PERK_RESCUE": "Use a perk to keep going.",
+  "INTRO_MOVE_TITLE": "Slide",
+  "INTRO_MOVE": "Swipe, drag or use the arrow keys. All the tiles move together.",
+  "INTRO_MERGE_TITLE": "Merge",
+  "INTRO_MERGE": "Matching tiles merge into one. Keep going until you reach the target score: {{target}}!",
+  "INTRO_PERKS_TITLE": "Earn perks",
+  "INTRO_PERKS": "Reach the ringed tiles on the ladder to earn perks. Tap a perk to use it.",
+  "INTRO_NEXT": "Next",
+  "INTRO_SKIP": "Skip",
+  "INTRO_PLAY": "Let's play",
+  "PERK_EARNED_TITLE": "New perks added!",
+  "PERK_EARNED_TEXT": "You reached {{tile}}. Here's what you got.",
+  "NO_MOVES": "No moves left",
+  "END_GAME": "End game",
+  "SAVE_RESCUE": "Go back to your saved game to keep going."
 }

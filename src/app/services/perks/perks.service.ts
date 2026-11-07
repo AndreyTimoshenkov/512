@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { IGridCellState } from '../../components/grid-cell/grid-cell.type';
+import { IGridCellState, ITileMove } from '../../components/grid-cell/grid-cell.type';
 import { EPerk, IPerkState, PERK_TIERS, PERKS, TPerkInventory } from '../../interfaces/perk.types';
 import { GameService } from '../game/game.service';
 
@@ -108,6 +108,16 @@ export class PerksService {
       }
     }
     return result;
+  }
+
+  // Pairs every tile with one of the same value on the old board. Tiles that kept their cell stay put.
+  travel(previous: IGridCellState[], next: IGridCellState[]): ITileMove[] {
+    const stayed = (index: number) => !!next[index].value && previous[index].value === next[index].value;
+    const free = previous.filter((cell, index) => cell.value && !stayed(index));
+    return next.filter((cell, index) => cell.value && !stayed(index)).map(cell => {
+      const from = free.splice(free.findIndex(other => other.value === cell.value), 1)[0];
+      return { from: from.key, to: cell.key, value: cell.value };
+    });
   }
 
   private swapPartners(key: number, state: IGridCellState[], size: number): number[] {

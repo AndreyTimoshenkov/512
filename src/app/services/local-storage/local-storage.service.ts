@@ -10,6 +10,8 @@ import { IPerkState } from '../../interfaces/perk.types';
 })
 export class LocalStorageService {
   private readonly _window = inject(WINDOW);
+  // Belong to the player, not the game, so they outlive every save and new game.
+  private readonly keptKeys = ['locale', 'introSeen'];
 
   saveState(state: Array<IGridCellState>) {
     if (!state.length) { return; }
@@ -28,9 +30,10 @@ export class LocalStorageService {
   clear(): void {
     if (!this.getState()) { return; }
 
-    const locale = this.getLocale();
-    this._window.localStorage?.clear();
-    if (locale) {this.saveLocale(locale)};
+    const storage = this._window.localStorage;
+    const kept = this.keptKeys.map(key => [key, storage?.getItem(key)] as const);
+    storage?.clear();
+    kept.forEach(([key, value]) => { if (value) { storage?.setItem(key, value); } });
   }
 
   saveTurn(turn: number) {
@@ -72,6 +75,14 @@ export class LocalStorageService {
     const perks = this._window.localStorage?.getItem('perks');
 
     return perks ? JSON.parse(perks) : null;
+  }
+
+  saveIntroSeen() {
+    this._window.localStorage?.setItem('introSeen', 'true');
+  }
+
+  getIntroSeen(): boolean {
+    return this._window.localStorage?.getItem('introSeen') === 'true';
   }
 
   saveLocale(locale: ESupportedLocale) {

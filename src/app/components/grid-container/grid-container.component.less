@@ -16,3 +16,39 @@
     cursor: grabbing;
   }
 }
+
+:host([data-fx='HAMMER']) {
+  animation: jolt 260ms ease-out 150ms;
+}
+
+:host([data-fx='SHUFFLE']) {
+  animation: rattle 420ms ease-in-out;
+}
+
+:host([data-fx='UNDO']), :host([data-fx='LOAD']) {
+  animation: twist 500ms ease-out;
+}
+
+@keyframes jolt {
+  25% {
+    transform: translateY(1.2%);
+  }
+  60% {
+    transform: translateY(-0.5%);
+  }
+}
+
+@keyframes rattle {
+  20%, 60% {
+    transform: rotate(-1.2deg);
+  }
+  40%, 80% {
+    transform: rotate(1.2deg);
+  }
+}
+
+@keyframes twist {
+  35% {
+    transform: rotate(-3deg) scale(0.97);
+  }
+}

@@ -52,6 +52,14 @@ export interface IUndoSnapshot {
   spawn: number | null;
 }
 
+// What plays over the board when a perk is used; reloading a save is the one that isn't a perk itself.
+export type TPerkEffect = EPerk | 'LOAD';
+
+export interface IPerkEffect {
+  effect: TPerkEffect;
+  cell?: number;
+}
+
 export interface IPerkHint {
   key: string;
   name?: string;

@@ -60,6 +60,34 @@
   animation: slide var(--slide-time) ease-in-out forwards;
 }
 
+// Keeps a removed tile on screen for its exit, in its grid area like a slide.
+:host(.exit) {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  opacity: 0;
+  animation: smash 420ms ease-in;
+
+  // The shockwave of the blow.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: calc(1.5cqw * var(--tile-scale)) solid var(--chalk);
+    border-radius: inherit;
+    opacity: 0;
+    animation: shockwave 300ms ease-out 180ms;
+  }
+}
+
+:host(.exit--swept) {
+  animation: swept 360ms ease-in calc(var(--order) * 45ms + 120ms) backwards;
+
+  &::after {
+    display: none;
+  }
+}
+
 .value {
   position: relative;
   margin: 0 0 calc(0.6cqw * var(--tile-scale));
@@ -94,6 +122,43 @@
       calc(var(--slide-columns) * (100% + var(--step))),
       calc(var(--slide-rows) * (100% + var(--step)))
     );
+  }
+}
+
+@keyframes smash {
+  0%, 40% {
+    opacity: 1;
+    transform: none;
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08, 0.82);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.3) rotate(14deg);
+  }
+}
+
+@keyframes shockwave {
+  from {
+    opacity: 1;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes swept {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(130%) rotate(24deg) scale(0.7);
   }
 }
 

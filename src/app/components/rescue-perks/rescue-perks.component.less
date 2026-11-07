@@ -1,0 +1,50 @@
+// Three across, so all six perks and a saved game still fit the panel on a small phone.
+:host {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.25rem;
+  width: min(100%, 26rem);
+}
+
+.perk {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 0;
+  padding: 0.25rem 0.1rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: var(--chalk);
+  box-shadow: 0 0.15rem 0 var(--chalk-soft);
+  color: var(--ink);
+  font: 700 clamp(0.625rem, 2.6cqw, 0.8125rem)/1.1 var(--text);
+  cursor: pointer;
+
+  &:active {
+    transform: translateY(0.15rem);
+    box-shadow: none;
+  }
+
+  &--save {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    gap: 0.35rem;
+    background: var(--goal);
+    box-shadow: 0 0.15rem 0 color-mix(in srgb, var(--goal) 60%, var(--ink));
+  }
+}
+
+app-perk-icon {
+  flex: none;
+  width: clamp(1.4rem, 8cqw, 2.25rem);
+}
+
+.perk--save app-perk-icon {
+  width: clamp(1.1rem, 6cqw, 1.75rem);
+}
+
+span {
+  max-width: 100%;
+}

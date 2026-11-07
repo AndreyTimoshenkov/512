@@ -1,6 +1,6 @@
 import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { By } from '@angular/platform-browser';
 import { SwipeDirective } from './directives/swipe.directive';
 import { EDirection } from './interfaces/general.types';
@@ -19,6 +19,8 @@ describe('AppComponent', () => {
       getTarget: vi.fn<LocalStorageService['getTarget']>().mockReturnValue(512),
       getPerks: vi.fn<LocalStorageService['getPerks']>().mockReturnValue(null),
       getLocale: vi.fn<LocalStorageService['getLocale']>().mockReturnValue(null),
+      getIntroSeen: vi.fn<LocalStorageService['getIntroSeen']>().mockReturnValue(true),
+      saveIntroSeen: vi.fn(),
       saveState: vi.fn(),
       savePerks: vi.fn(),
       saveTurn: vi.fn(),
@@ -265,6 +267,308 @@ describe('AppComponent', () => {
     expect(storage.saveTurn).toHaveBeenLastCalledWith(app.turn$$());
   });
 
+  describe('first play intro', () => {
+    const open = async () => {
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+      return fixture;
+    };
+    const heading = (fixture: ReturnType<typeof TestBed.createComponent<AppComponent>>) =>
+      fixture.nativeElement.querySelector('app-intro h2')?.textContent;
+
+    beforeEach(() => storage.getIntroSeen.mockReturnValue(false));
+
+    it('walks through the steps, blocking moves, and is not shown again', async () => {
+      const fixture = await open();
+      const app = fixture.componentInstance;
+      expect(heading(fixture)).toContain('INTRO_MOVE_TITLE');
+      const state = app.state$$();
+      app.move(EDirection.right);
+      app.move(EDirection.left);
+      expect(app.state$$()).toBe(state);
+
+      fixture.nativeElement.querySelector('app-intro button').click();
+      fixture.detectChanges();
+      expect(heading(fixture)).toContain('INTRO_MERGE_TITLE');
+      expect(fixture.nativeElement.querySelector('app-perk-tray.spotlight')).toBeNull();
+
+      fixture.nativeElement.querySelector('app-intro button').click();
+      fixture.detectChanges();
+      expect(heading(fixture)).toContain('INTRO_PERKS_TITLE');
+      expect(fixture.nativeElement.querySelector('app-perk-tray.spotlight')).not.toBeNull();
+      expect(fixture.nativeElement.querySelector('app-tile-ladder.spotlight')).not.toBeNull();
+      expect(fixture.nativeElement.querySelectorAll('app-intro button').length).toBe(1);
+      expect(storage.saveIntroSeen).not.toHaveBeenCalled();
+
+      fixture.nativeElement.querySelector('app-intro button').click();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-intro')).toBeNull();
+      expect(fixture.nativeElement.querySelector('app-perk-tray.spotlight')).toBeNull();
+      expect(storage.saveIntroSeen).toHaveBeenCalledTimes(1);
+    });
+
+    it('names the running game\'s target, not the default one', async () => {
+      TestBed.inject(TranslateService).setTranslation('en', { INTRO_MERGE: 'reach {{target}}' });
+      storage.getState.mockReturnValue(board([2, 2, ...Array(14).fill(0)]));
+      storage.getTarget.mockReturnValue(2048);
+      const fixture = await open();
+      fixture.nativeElement.querySelector('app-intro button').click();
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-intro p').textContent).toContain('reach 2048');
+    });
+
+    it('can be skipped or dismissed with Escape', async () => {
+      const skipped = await open();
+      skipped.nativeElement.querySelectorAll('app-intro button')[1].click();
+      skipped.detectChanges();
+      expect(skipped.nativeElement.querySelector('app-intro')).toBeNull();
+      expect(storage.saveIntroSeen).toHaveBeenCalledTimes(1);
+
+      const escaped = await open();
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      escaped.detectChanges();
+      expect(escaped.nativeElement.querySelector('app-intro')).toBeNull();
+    });
+
+    it('is shown again to a player who left without moving, but not mid-game', async () => {
+      storage.getState.mockReturnValue(board([2, 2, ...Array(14).fill(0)]));
+      expect(heading(await open())).toContain('INTRO_MOVE_TITLE');
+
+      storage.getTurn.mockReturnValue(5);
+      expect(heading(await open())).toBeUndefined();
+    });
+
+    it('stays away once seen', async () => {
+      storage.getIntroSeen.mockReturnValue(true);
+      expect(heading(await open())).toBeUndefined();
+    });
+  });
+
+  describe('perk effects', () => {
+    type TFixture = ReturnType<typeof TestBed.createComponent<AppComponent>>;
+    const shown = (values: number[]) => board(values);
+    const give = (app: AppComponent, perk: EPerk) =>
+      app.perks$$.update(perks => ({ ...perks, inventory: { ...perks.inventory, [perk]: 1 } }));
+    const stamp = (fixture: TFixture) => fixture.nativeElement.querySelector('app-perk-effect');
+    const start = async (values: number[]) => {
+      storage.getState.mockReturnValue(shown(values));
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      vi.useFakeTimers();
+      return fixture;
+    };
+
+    afterEach(() => vi.useRealTimers());
+
+    it('gives every perk an effect that clears itself', async () => {
+      const values = [2, 4, 8, 16, ...Array(12).fill(0)];
+      const uses: [EPerk, (app: AppComponent) => void][] = [
+        [EPerk.double, app => app.usePerk(EPerk.double)],
+        [EPerk.save, app => app.usePerk(EPerk.save)],
+        [EPerk.sweep, app => app.usePerk(EPerk.sweep)],
+        [EPerk.shuffle, app => app.usePerk(EPerk.shuffle)],
+        [EPerk.hammer, app => { app.usePerk(EPerk.hammer); app.pickTile(0); }],
+        [EPerk.upgrade, app => { app.usePerk(EPerk.upgrade); app.pickTile(0); }],
+        [EPerk.swap, app => { app.usePerk(EPerk.swap); app.pickTile(0); app.pickTile(1); }],
+      ];
+      for (const [perk, use] of uses) {
+        const fixture = await start(values);
+        const app = fixture.componentInstance;
+        give(app, perk);
+        use(app);
+        fixture.detectChanges();
+        expect(stamp(fixture).getAttribute('data-fx')).toBe(perk);
+        expect(fixture.nativeElement.querySelector('grid-container').getAttribute('data-fx')).toBe(perk);
+
+        vi.advanceTimersByTime(2000);
+        fixture.detectChanges();
+        expect(stamp(fixture)).toBeNull();
+        expect(app.frame()).toBeNull();
+        vi.useRealTimers();
+      }
+    });
+
+    it('rewinds on undo and on reloading a save', async () => {
+      const fixture = await start([2, 2, ...Array(14).fill(0)]);
+      const app = fixture.componentInstance;
+      give(app, EPerk.save);
+      app.usePerk(EPerk.save);
+      app.move(EDirection.left);
+      give(app, EPerk.undo);
+      app.usePerk(EPerk.undo);
+      fixture.detectChanges();
+      expect(stamp(fixture).getAttribute('data-fx')).toBe(EPerk.undo);
+      expect(app.merged().size).toBeGreaterThan(0);
+
+      app.move(EDirection.left);
+      app.loadSave();
+      fixture.detectChanges();
+      expect(stamp(fixture).getAttribute('data-fx')).toBe('LOAD');
+      expect(stamp(fixture).querySelector('app-perk-icon')).not.toBeNull();
+    });
+
+    it('keeps smashed and swept tiles on screen while they leave', async () => {
+      const fixture = await start([2, 4, 8, 2, ...Array(12).fill(0)]);
+      const app = fixture.componentInstance;
+      give(app, EPerk.sweep);
+      app.usePerk(EPerk.sweep);
+      fixture.detectChanges();
+      expect(app.exits()).toEqual([
+        { value: 2, row: 0, column: 0 },
+        { value: 4, row: 0, column: 1 },
+        { value: 2, row: 0, column: 3 },
+      ]);
+      expect(fixture.nativeElement.querySelectorAll('grid-cell.exit--swept').length).toBe(3);
+      expect(app.state$$().filter(cell => cell.value).length).toBe(1);
+
+      vi.advanceTimersByTime(app.effectMs);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelectorAll('grid-cell.exit').length).toBe(0);
+    });
+
+    it('does not treat shuffled tiles as removed, even when their cell ends up empty', async () => {
+      const fixture = await start([2, 4, 8, 16, ...Array(12).fill(0)]);
+      const app = fixture.componentInstance;
+      give(app, EPerk.shuffle);
+      app.usePerk(EPerk.shuffle);
+      expect(app.slides().length).toBeGreaterThan(0);
+      expect(app.exits()).toEqual([]);
+    });
+
+    it('slides swapped and shuffled tiles to where they end up', async () => {
+      const fixture = await start([2, 4, ...Array(14).fill(0)]);
+      const app = fixture.componentInstance;
+      give(app, EPerk.swap);
+      app.usePerk(EPerk.swap);
+      app.pickTile(0);
+      app.pickTile(1);
+      expect(app.slides()).toEqual([
+        { value: 4, row: 0, column: 1, rows: 0, columns: -1 },
+        { value: 2, row: 0, column: 0, rows: 0, columns: 1 },
+      ]);
+      expect(app.pace()).toBe(app.perkPace);
+      expect(app.state$$().slice(0, 2).map(cell => cell.value)).toEqual([4, 2]);
+    });
+
+    it('stops at once when the next move starts', async () => {
+      const fixture = await start([2, 4, 8, 16, ...Array(12).fill(0)]);
+      const app = fixture.componentInstance;
+      give(app, EPerk.double);
+      app.usePerk(EPerk.double);
+      app.move(EDirection.down);
+      expect(app.effects()).toEqual([]);
+    });
+  });
+
+  describe('perk hints', () => {
+    type TFixture = ReturnType<typeof TestBed.createComponent<AppComponent>>;
+    const firstTier = [EPerk.double, EPerk.swap, EPerk.hammer];
+    const title = (fixture: TFixture) => fixture.nativeElement.querySelector('app-intro h2')?.textContent;
+    const icons = (fixture: TFixture) => fixture.nativeElement.querySelectorAll('app-intro app-perk-icon').length;
+    const lit = (fixture: TFixture) => fixture.nativeElement.querySelectorAll('app-perk-tray .highlighted').length;
+    const next = (fixture: TFixture) => {
+      fixture.nativeElement.querySelector('app-intro button').click();
+      fixture.detectChanges();
+    };
+    const settle = (fixture: TFixture) => {
+      vi.advanceTimersByTime(1000);
+      fixture.detectChanges();
+    };
+    const playTo = (fixture: TFixture, values: number[]) => {
+      fixture.componentInstance.state$$.set(board(values));
+      fixture.componentInstance.move(EDirection.left);
+      fixture.detectChanges();
+    };
+    const pair = (value: number) => [value, value, ...Array(14).fill(0)];
+
+    const start = async () => {
+      storage.getState.mockReturnValue(board(pair(2)));
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      vi.useFakeTimers();
+      return fixture;
+    };
+
+    afterEach(() => vi.useRealTimers());
+
+    it('waits for the move, announces the new perks, then explains each one', async () => {
+      TestBed.inject(TranslateService).setTranslation('en', { PERK_EARNED_TEXT: 'reached {{tile}}' });
+      const fixture = await start();
+      playTo(fixture, pair(32));
+      expect(title(fixture)).toBeUndefined();
+      settle(fixture);
+
+      expect(title(fixture)).toContain('PERK_EARNED_TITLE');
+      expect(fixture.nativeElement.querySelector('app-intro p').textContent).toContain('reached 64');
+      expect(icons(fixture)).toBe(3);
+      expect(lit(fixture)).toBe(3);
+      next(fixture);
+
+      for (const perk of firstTier) {
+        expect(title(fixture)).toContain(`PERK_${perk}`);
+        expect(fixture.nativeElement.querySelector('app-intro p').textContent).toContain(`PERK_${perk}_INFO`);
+        expect(icons(fixture)).toBe(1);
+        expect(lit(fixture)).toBe(1);
+        expect(fixture.componentInstance.panelOpen()).toBe(true);
+        if (perk === EPerk.hammer) {
+          expect(fixture.nativeElement.querySelector('app-intro button').textContent).toContain('KEEP_PLAYING');
+        }
+        next(fixture);
+      }
+
+      expect(fixture.nativeElement.querySelector('app-intro')).toBeNull();
+      expect(lit(fixture)).toBe(0);
+    });
+
+    it('comes back at every milestone', async () => {
+      const fixture = await start();
+      for (const [tile, count] of [[32, 3], [64, 3], [128, 2]]) {
+        playTo(fixture, pair(tile));
+        settle(fixture);
+        expect(title(fixture)).toContain('PERK_EARNED_TITLE');
+        expect(icons(fixture)).toBe(count);
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        fixture.detectChanges();
+        expect(title(fixture)).toBeUndefined();
+      }
+    });
+
+    it('comes back for the same milestone in the next game', async () => {
+      const fixture = await start();
+      playTo(fixture, pair(32));
+      settle(fixture);
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      fixture.detectChanges();
+
+      fixture.componentInstance.state$$.set([]);
+      storage.getState.mockReturnValue([]);
+      fixture.componentInstance.startNewGame();
+      fixture.detectChanges();
+      playTo(fixture, pair(32));
+      settle(fixture);
+      expect(title(fixture)).toContain('PERK_EARNED_TITLE');
+    });
+
+    it('stays away when a move reaches no milestone', async () => {
+      const fixture = await start();
+      playTo(fixture, pair(16));
+      settle(fixture);
+      expect(title(fixture)).toBeUndefined();
+    });
+
+    it('comes before the game-over panel when the same move ends the game', async () => {
+      const fixture = await start();
+      playTo(fixture, [32, 32, 4, 2, 2, 4, 2, 4, 4, 2, 4, 2, 2, 4, 2, 4]);
+      settle(fixture);
+      expect(title(fixture)).toContain('PERK_EARNED_TITLE');
+      expect(fixture.nativeElement.querySelector('app-game-panel h2').textContent).not.toContain('GAME_OVER');
+    });
+  });
+
   it('makes the controls behind an open panel inert and hands focus back on closing', async () => {
     const fixture = TestBed.createComponent(AppComponent);
     document.body.append(fixture.nativeElement);
@@ -361,6 +665,7 @@ describe('AppComponent', () => {
     app.state$$.set(board([256, 256, ...Array(14).fill(0)]));
     app.move(EDirection.left);
     expect(app.wonOpen()).toBe(false);
+    app.finishIntro();
     app.state$$.set(board([512, 512, ...Array(14).fill(0)]));
     app.move(EDirection.left);
     expect(app.wonOpen()).toBe(true);
@@ -448,6 +753,7 @@ describe('AppComponent', () => {
       app.move(EDirection.left);
       const afterMove = structuredClone(app.state$$());
       expect(app.perks$$().inventory[EPerk.double]).toBe(1);
+      app.finishIntro();
 
       app.usePerk(EPerk.undo);
       expect(app.state$$()).toEqual(start);
@@ -668,6 +974,84 @@ describe('AppComponent', () => {
       fixture.detectChanges();
       expect(app.isLost()).toBe(false);
       expect(fixture.nativeElement.querySelector('app-game-panel')).toBeNull();
+    });
+
+    describe('before the game ends', () => {
+      const lose = async (...perks: EPerk[]) => {
+        storage.getState.mockReturnValue(board(stuck));
+        const fixture = TestBed.createComponent(AppComponent);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        perks.forEach(perk => give(fixture.componentInstance, perk));
+        fixture.detectChanges();
+        return fixture;
+      };
+      const panel = (fixture: ReturnType<typeof lose> extends Promise<infer T> ? T : never) =>
+        fixture.nativeElement.querySelector('app-game-panel') as HTMLElement;
+      const buttons = (fixture: Parameters<typeof panel>[0]) => [...panel(fixture).querySelectorAll('button')] as HTMLElement[];
+
+      it('offers the usable perks instead of a new game', async () => {
+        const fixture = await lose(EPerk.hammer, EPerk.shuffle);
+        expect(panel(fixture).querySelector('h2')!.textContent).toContain('NO_MOVES');
+        expect(panel(fixture).textContent).toContain('PERK_RESCUE');
+        expect(panel(fixture).querySelectorAll('app-rescue-perks button').length).toBe(2);
+        expect(panel(fixture).textContent).not.toContain('NEW_GAME');
+        expect(panel(fixture).querySelector('app-game-setup')).toBeNull();
+        expect(fixture.nativeElement.querySelector('.scoreboard').hasAttribute('inert')).toBe(true);
+      });
+
+      it('uses a perk from the panel and comes back if aiming is cancelled', async () => {
+        const fixture = await lose(EPerk.hammer);
+        (panel(fixture).querySelector('app-rescue-perks button') as HTMLElement).click();
+        fixture.detectChanges();
+        expect(fixture.componentInstance.targetPerk()).toBe(EPerk.hammer);
+        expect(panel(fixture)).toBeNull();
+
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        fixture.detectChanges();
+        expect(panel(fixture).querySelector('h2')!.textContent).toContain('NO_MOVES');
+      });
+
+      it('only ends the game when asked, and then locks the tray', async () => {
+        const fixture = await lose(EPerk.hammer);
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        fixture.detectChanges();
+        expect(panel(fixture).querySelector('h2')!.textContent).toContain('NO_MOVES');
+
+        buttons(fixture).at(-1)!.click();
+        fixture.detectChanges();
+        expect(panel(fixture).querySelector('h2')!.textContent).toContain('GAME_OVER');
+        expect(panel(fixture).querySelector('app-rescue-perks')).toBeNull();
+        expect(panel(fixture).getAttribute('aria-modal')).toBe('true');
+        expect(fixture.nativeElement.querySelector('app-perk-tray').hasAttribute('inert')).toBe(true);
+      });
+
+      it('asks again on the next loss after giving up', async () => {
+        const fixture = await lose(EPerk.hammer);
+        const app = fixture.componentInstance;
+        buttons(fixture).at(-1)!.click();
+        fixture.detectChanges();
+        expect(app.gaveUp()).toBe(true);
+
+        app.state$$.set(board([2, 0, ...stuck.slice(2)]));
+        fixture.detectChanges();
+        expect(app.gaveUp()).toBe(false);
+        app.state$$.set(board(stuck));
+        fixture.detectChanges();
+        expect(panel(fixture).querySelector('h2')!.textContent).toContain('NO_MOVES');
+      });
+
+      it('counts a saved game as a way back', async () => {
+        const fixture = await lose();
+        const app = fixture.componentInstance;
+        expect(panel(fixture).querySelector('h2')!.textContent).toContain('GAME_OVER');
+
+        app.perks$$.update(perks => ({ ...perks, save: { state: board(stuck), score: 0, turn: 1, perks } }));
+        fixture.detectChanges();
+        expect(panel(fixture).querySelector('h2')!.textContent).toContain('NO_MOVES');
+        expect(panel(fixture).textContent).toContain('SAVE_RESCUE');
+        expect(panel(fixture).textContent).toContain('LOAD_SAVE');
+      });
     });
 
     it('locks the tray on game over when no perk can help', async () => {

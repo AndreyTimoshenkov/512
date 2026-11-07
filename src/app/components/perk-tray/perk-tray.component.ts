@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { TranslateModule } from '@ngx-translate/core';
-import { EPerk, PERKS, TPerkInventory } from '../../interfaces/perk.types';
-import { PERK_ART } from './perk-art';
+import { EPerk, PERKS, TPerkEffect, TPerkInventory } from '../../interfaces/perk.types';
+import { PerkIconComponent } from '../perk-icon/perk-icon.component';
 
 @Component({
     selector: 'app-perk-tray',
-    imports: [TranslateModule],
+    imports: [TranslateModule, PerkIconComponent],
     templateUrl: './perk-tray.component.html',
     styleUrl: './perk-tray.component.less',
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -17,10 +17,11 @@ export class PerkTrayComponent {
   @Input() doubling = false;
   @Input() saved = false;
   @Input() hint = '';
+  @Input() highlight: EPerk[] = [];
+  @Input() fired?: TPerkEffect;
   @Output() use = new EventEmitter<EPerk>();
 
   perks = PERKS;
   double = EPerk.double;
   save = EPerk.save;
-  art = PERK_ART;
 }

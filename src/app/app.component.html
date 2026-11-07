@@ -22,13 +22,13 @@
   </div>
 
   @let perkHint = hint();
-  <app-perk-tray [attr.inert]="perksLocked() ? '' : null" [inventory]="perks$$().inventory" [available]="availablePerks()"
+  <app-perk-tray [class.spotlight]="introShown()?.spotlight" [highlight]="introShown()?.perks ?? []" [fired]="effects()[0]?.effect" [attr.inert]="perksLocked() ? '' : null" [inventory]="perks$$().inventory" [available]="availablePerks()"
     [active]="targetPerk()" [doubling]="perks$$().doubleMoves > 0" [saved]="!!perks$$().save" (use)="usePerk($event)"
     [hint]="perkHint ? (perkHint.key | translate: { name: (perkHint.name ?? '') | translate, moves: perkHint.moves, tile: perkHint.tile }) : ''"></app-perk-tray>
 
   <div class="board-space">
     <div class="board">
-      <grid-container class="game" [style.--grid-size]="size()" [style.--slide-time]="slideTime() + 'ms'" [style.--pace]="pace()">
+      <grid-container class="game" [attr.data-fx]="effects()[0]?.effect" [style.--grid-size]="size()" [style.--slide-time]="slideTime() + 'ms'" [style.--pace]="pace()">
         @for(cell of board(); track $index;) {
           <grid-cell bcgColour [bcg]="landing().has(cell.key) ? 0 : cell.value"
             [value]="landing().has(cell.key) ? 0 : cell.value"
@@ -42,11 +42,27 @@
             [style.grid-row]="slide.row + 1 + ' / span 1'" [style.grid-column]="slide.column + 1 + ' / span 1'"
             [style.--slide-rows]="slide.rows" [style.--slide-columns]="slide.columns"></grid-cell>
         }
+        @for(exit of exits(); track exit) {
+          <grid-cell class="exit" [class.exit--swept]="effects()[0]?.effect === sweep" aria-hidden="true" bcgColour [bcg]="exit.value" [value]="exit.value"
+            [style.grid-row]="exit.row + 1 + ' / span 1'" [style.grid-column]="exit.column + 1 + ' / span 1'" [style.--order]="exit.column"></grid-cell>
+        }
       </grid-container>
+      @for (item of effects(); track item) {
+        <app-perk-effect [effect]="item.effect" [cell]="item.cell" [size]="size()"></app-perk-effect>
+      }
 
-      @if (isLost() && !targetPerk() && !frame()) {
-        <app-game-panel [heading]="'GAME_OVER' | translate" [modal]="!canRescue()"
-          [message]="('SCORE' | translate) + ': ' + score$$() + (canRescue() ? '. ' + ('PERK_RESCUE' | translate) : '')">
+      @if (introOpen() && !frame()) {
+        <app-intro [steps]="intro()" [target]="target$$()" [finishLabel]="introShown()?.perks ? 'KEEP_PLAYING' : 'INTRO_PLAY'"
+          [(step)]="introStep" (done)="finishIntro()"></app-intro>
+      } @else if (canRescue() && !targetPerk() && !frame()) {
+        <app-game-panel [heading]="'NO_MOVES' | translate" [modal]="false"
+          [message]="(availablePerks().size ? 'PERK_RESCUE' : 'SAVE_RESCUE') | translate">
+          <app-rescue-perks panel-media [perks]="availablePerks()" [saved]="!!perks$$().save" (use)="usePerk($event)"
+            (reload)="loadSave()"></app-rescue-perks>
+          <button class="block-button block-button--quiet" type="button" (click)="gaveUp.set(true)">{{ 'END_GAME' | translate }}</button>
+        </app-game-panel>
+      } @else if (isLost() && !targetPerk() && !frame()) {
+        <app-game-panel [heading]="'GAME_OVER' | translate" [message]="('SCORE' | translate) + ': ' + score$$()">
           <app-game-setup [(target)]="setupTarget" [(size)]="setupSize"></app-game-setup>
           @if (perks$$().save) {
             <button class="block-button" type="button" (click)="loadSave()">{{ 'LOAD_SAVE' | translate }}</button>
@@ -66,7 +82,7 @@
         </app-game-panel>
       }
 
-      <app-tile-ladder [best]="best()" [target]="ladderEnd()" [rewards]="rewardTiles()" role="img" [attr.aria-label]="('BEST_TILE' | translate) + ': ' + best()"></app-tile-ladder>
+      <app-tile-ladder [class.spotlight]="introShown()?.spotlight" [best]="best()" [target]="ladderEnd()" [rewards]="rewardTiles()" role="img" [attr.aria-label]="('BEST_TILE' | translate) + ': ' + best()"></app-tile-ladder>
     </div>
   </div>
 </main>

@@ -39,5 +39,19 @@
   "PERK_LOCKED": "{{name}} Kazanmak için ulaşın: {{tile}}.",
   "PERK_EARNED": "{{tile}} taşı için yeni güçlendirmeler!",
   "PERK_DOUBLE_ACTIVE": "Çift puan, kalan hamle: {{moves}}",
-  "PERK_RESCUE": "Devam etmek için bir güçlendirme kullanın."
+  "PERK_RESCUE": "Devam etmek için bir güçlendirme kullanın.",
+  "INTRO_MOVE_TITLE": "Kaydır",
+  "INTRO_MOVE": "Kaydırın, sürükleyin veya ok tuşlarını kullanın. Tüm taşlar birlikte hareket eder.",
+  "INTRO_MERGE_TITLE": "Birleştir",
+  "INTRO_MERGE": "Aynı taşlar birleşir. Hedefe ulaşana dek devam edin: {{target}}!",
+  "INTRO_PERKS_TITLE": "Güçlendirme kazan",
+  "INTRO_PERKS": "Güçlendirme kazanmak için merdivendeki çerçeveli taşlara ulaşın. Kullanmak için güçlendirmeye dokunun.",
+  "INTRO_NEXT": "İleri",
+  "INTRO_SKIP": "Atla",
+  "INTRO_PLAY": "Oyna",
+  "PERK_EARNED_TITLE": "Yeni güçlendirmeler!",
+  "PERK_EARNED_TEXT": "{{tile}} taşına ulaştınız. İşte kazandıklarınız.",
+  "NO_MOVES": "Hamle kalmadı",
+  "END_GAME": "Oyunu bitir",
+  "SAVE_RESCUE": "Devam etmek için kayıtlı oyununa dön."
 }

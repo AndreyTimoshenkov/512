@@ -26,3 +26,16 @@
   box-shadow: inset 0 0 0 1.5px var(--goal);
   color: var(--goal);
 }
+
+:host(.spotlight) .reward {
+  background: var(--goal);
+  color: var(--ink);
+  animation: spotlight 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes spotlight {
+  to {
+    background: color-mix(in srgb, var(--goal) 35%, transparent);
+    color: var(--goal);
+  }
+}

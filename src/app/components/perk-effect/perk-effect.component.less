@@ -1,0 +1,239 @@
+:host {
+  --duration: 650ms;
+  position: absolute;
+  z-index: 3; // Over the tiles, under the panels.
+  inset: 0;
+  bottom: auto;
+  aspect-ratio: 1;
+  border-radius: 5cqw;
+  pointer-events: none;
+
+  // The wash over the whole board.
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+  }
+}
+
+app-perk-icon {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  width: 34cqw;
+  margin: -17cqw 0 0 -17cqw;
+  filter: drop-shadow(0 0.5cqw 0 rgb(0 0 0 / 0.25));
+  opacity: 0;
+  animation: stamp var(--duration) ease-out;
+}
+
+:host([data-fx='HAMMER']), :host([data-fx='SWAP']), :host([data-fx='UPGRADE']) {
+  app-perk-icon {
+    width: 20cqw;
+    margin: -10cqw 0 0 -10cqw;
+  }
+}
+
+:host([data-fx='HAMMER']) app-perk-icon {
+  transform-origin: 80% 80%;
+  animation: strike 420ms ease-in;
+}
+
+:host([data-fx='UPGRADE']) app-perk-icon {
+  animation: rise var(--duration) ease-out;
+}
+
+:host([data-fx='SWEEP']) {
+  overflow: hidden; // The broom comes in from off the board.
+
+  app-perk-icon {
+    top: 50%;
+    left: 50%;
+    animation: wipe var(--duration) ease-in-out;
+  }
+
+  &::before {
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.3), transparent);
+    animation: wipe-wash var(--duration) ease-in-out;
+  }
+}
+
+:host([data-fx='SHUFFLE']) app-perk-icon {
+  animation: tumble var(--duration) ease-out;
+}
+
+:host([data-fx='DOUBLE']) {
+  app-perk-icon {
+    animation: tumble var(--duration) ease-out;
+  }
+
+  &::before {
+    box-shadow: inset 0 0 0 2.5cqw var(--goal), inset 0 0 14cqw color-mix(in srgb, var(--goal) 60%, transparent);
+    animation: glow var(--duration) ease-out;
+  }
+}
+
+:host([data-fx='SAVE']) {
+  &::before {
+    background: var(--chalk);
+    animation: shutter var(--duration) ease-out;
+  }
+}
+
+:host([data-fx='UNDO']), :host([data-fx='LOAD']) {
+  app-perk-icon {
+    animation: rewind var(--duration) ease-out;
+  }
+
+  &::before {
+    background: var(--chalk-soft);
+    animation: wash var(--duration) ease-out;
+  }
+}
+
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  45%, 70% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes strike {
+  0% {
+    opacity: 0;
+    transform: translate(10%, -45%) rotate(55deg);
+  }
+  35% {
+    opacity: 1;
+    transform: translate(10%, -45%) rotate(55deg);
+  }
+  55% {
+    opacity: 1;
+    transform: rotate(-15deg);
+  }
+  75% {
+    opacity: 1;
+    transform: rotate(-5deg);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-5deg);
+  }
+}
+
+@keyframes rise {
+  0% {
+    opacity: 0;
+    transform: translateY(20%) scale(0.5);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-40%) scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-130%);
+  }
+}
+
+@keyframes wipe {
+  0% {
+    opacity: 1;
+    transform: translateX(-190%) rotate(-20deg);
+  }
+  50% {
+    transform: translateX(0) rotate(12deg);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(190%) rotate(-20deg);
+  }
+}
+
+@keyframes wipe-wash {
+  0% {
+    opacity: 1;
+    transform: translateX(-100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes tumble {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(-200deg);
+  }
+  45%, 70% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes rewind {
+  0% {
+    opacity: 0;
+    transform: rotate(180deg) scale(0.5);
+  }
+  40%, 65% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.8);
+  }
+}
+
+@keyframes wash {
+  0% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.45;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+}
+
+@keyframes shutter {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}

@@ -39,5 +39,19 @@
   "PERK_LOCKED": "{{name}} Atteignez {{tile}} pour en gagner un.",
   "PERK_EARNED": "Nouveaux bonus pour la tuile {{tile}} !",
   "PERK_DOUBLE_ACTIVE": "Points doublés, coups restants : {{moves}}",
-  "PERK_RESCUE": "Utilisez un bonus pour continuer."
+  "PERK_RESCUE": "Utilisez un bonus pour continuer.",
+  "INTRO_MOVE_TITLE": "Glissez",
+  "INTRO_MOVE": "Balayez, faites glisser ou utilisez les flèches. Toutes les tuiles bougent ensemble.",
+  "INTRO_MERGE_TITLE": "Fusionnez",
+  "INTRO_MERGE": "Les tuiles identiques fusionnent. Continuez jusqu’à l’objectif : {{target}} !",
+  "INTRO_PERKS_TITLE": "Gagnez des bonus",
+  "INTRO_PERKS": "Atteignez les tuiles encadrées de l’échelle pour gagner des bonus. Touchez un bonus pour l’utiliser.",
+  "INTRO_NEXT": "Suivant",
+  "INTRO_SKIP": "Passer",
+  "INTRO_PLAY": "Jouer",
+  "PERK_EARNED_TITLE": "Nouveaux bonus !",
+  "PERK_EARNED_TEXT": "Vous avez atteint {{tile}}. Voici ce que vous avez gagné.",
+  "NO_MOVES": "Plus de coups",
+  "END_GAME": "Terminer la partie",
+  "SAVE_RESCUE": "Revenez à votre partie sauvegardée pour continuer."
 }

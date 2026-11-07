@@ -23,6 +23,13 @@ export interface ITileSlide {
   columns: number;
 }
 
+// A tile a perk took off the board, drawn for a moment so it can leave on screen.
+export interface ITileExit {
+  value: number;
+  row: number;
+  column: number;
+}
+
 // export enum EGridCellColor {
 //   // support = '#587EDD',
 //   // error = '#E74326',

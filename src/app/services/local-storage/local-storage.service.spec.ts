@@ -14,6 +14,16 @@ describe('LocalStorageService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('remembers the intro was seen across saves and new games', () => {
+    localStorage.clear();
+    expect(service.getIntroSeen()).toBe(false);
+    service.saveIntroSeen();
+    service.saveState([{ key: 0, value: 2 }]);
+    service.clear();
+    expect(service.getIntroSeen()).toBe(true);
+    localStorage.clear();
+  });
+
   it('falls back to the default target when nothing valid is saved', () => {
     localStorage.clear();
     expect(service.getTarget()).toBe(512);

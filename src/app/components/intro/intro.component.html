@@ -1,0 +1,35 @@
+<app-game-panel aria-live="polite" [heading]="current().title | translate"
+  [message]="current().text | translate: params()">
+  <div class="media" aria-hidden="true" panel-media>
+    @if (current().demo; as demo) {
+      <div class="demo" [class]="'demo demo--' + demo">
+        @for (cell of [1, 2, 3, 4]; track cell) {
+          <span class="cell"></span>
+        }
+        <grid-cell class="tile tile--mover" bcgColour [bcg]="2" [value]="2"></grid-cell>
+        @if (demo === 'merge') {
+          <grid-cell class="tile tile--rest" bcgColour [bcg]="2" [value]="2"></grid-cell>
+          <grid-cell class="tile tile--merged" bcgColour [bcg]="4" [value]="4"></grid-cell>
+        } @else {
+          <span class="finger"></span>
+        }
+      </div>
+    }
+    @if (current().perks; as perks) {
+      <div class="perks">
+        @for (perk of perks; track perk) {
+          <app-perk-icon class="perk" [perk]="perk"></app-perk-icon>
+        }
+      </div>
+    }
+    <div class="dots">
+      @for (item of steps(); track item.title) {
+        <span class="dot" [class.dot--on]="$index === step()"></span>
+      }
+    </div>
+  </div>
+  <button class="block-button" type="button" (click)="next()">{{ (isLast() ? finishLabel() : 'INTRO_NEXT') | translate }}</button>
+  @if (!isLast()) {
+    <button class="block-button block-button--quiet" type="button" (click)="done.emit()">{{ 'INTRO_SKIP' | translate }}</button>
+  }
+</app-game-panel>
