@@ -134,6 +134,7 @@ describe('AppComponent', () => {
       const app = fixture.componentInstance;
 
       app.move(EDirection.right);
+      expect(app.pace()).toBe(1);
       fixture.detectChanges();
       const slides = [...fixture.nativeElement.querySelectorAll('grid-cell.slide')] as HTMLElement[];
       expect(slides.length).toBe(3);
@@ -151,6 +152,94 @@ describe('AppComponent', () => {
     }
   });
 
+  it('plays a chain merge one step at a time, with the spawn and the panels last', async () => {
+    vi.useFakeTimers();
+    try {
+      storage.getState.mockReturnValue(board([2, 2, 4, 8, ...Array(12).fill(0)]));
+      storage.getTarget.mockReturnValue(16);
+      const fixture = TestBed.createComponent(AppComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const app = fixture.componentInstance;
+      const slideMs = app.slideMs * app.chainPace;
+      const popMs = app.popMs * app.chainPace;
+      const shown = () => app.board().slice(0, 4).map(cell => cell.value);
+
+      app.move(EDirection.left);
+      expect(app.pace()).toBe(app.chainPace);
+      expect(app.state$$()[0].value).toBe(16);
+      expect(app.wonOpen()).toBe(true);
+      expect(shown()).toEqual([4, 4, 8, 0]);
+      expect(app.merged().has(0)).toBe(true);
+      expect(app.board().filter(cell => cell.value).length).toBe(3);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-game-panel')).toBeNull();
+
+      vi.advanceTimersByTime(slideMs + popMs);
+      expect(app.merged().size).toBe(0);
+      expect(shown()).toEqual([4, 4, 8, 0]);
+
+      vi.advanceTimersByTime(app.stagePauseMs);
+      expect(shown()).toEqual([8, 8, 0, 0]);
+      expect(app.merged().has(0)).toBe(true);
+
+      vi.advanceTimersByTime(slideMs + popMs + app.stagePauseMs);
+      expect(shown()).toEqual([16, 0, 0, 0]);
+      expect(app.frame()).not.toBeNull();
+
+      vi.advanceTimersByTime(slideMs);
+      expect(app.frame()).toBeNull();
+      expect(app.board().filter(cell => cell.value).length).toBe(2);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('app-game-panel')).not.toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps long slides on big boards at the speed of a short board', () => {
+    vi.useFakeTimers();
+    try {
+      const app = TestBed.createComponent(AppComponent).componentInstance;
+      app.state$$.set(board([2, ...Array(35).fill(0)]));
+      app.move(EDirection.right);
+      expect(app.slideTime()).toBeCloseTo(app.slideMs * 5 / app.slideCells);
+
+      vi.advanceTimersByTime(app.slideMs);
+      expect(app.slides().length).toBe(1);
+      vi.advanceTimersByTime(app.slideTime() - app.slideMs);
+      expect(app.slides().length).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not stretch slides that fit the usual distance', () => {
+    const app = TestBed.createComponent(AppComponent).componentInstance;
+    app.state$$.set(board([0, 2, ...Array(34).fill(0)]));
+    app.move(EDirection.left);
+    expect(app.slideTime()).toBe(app.slideMs);
+  });
+
+  it('jumps to the next move when one comes in mid-chain', () => {
+    vi.useFakeTimers();
+    // Spawns land in the last empty cell, out of the 16's way.
+    const random = vi.spyOn(Math, 'random').mockReturnValue(0.99);
+    try {
+      const app = TestBed.createComponent(AppComponent).componentInstance;
+      app.state$$.set(board([2, 2, 4, 8, ...Array(12).fill(0)]));
+      app.move(EDirection.left);
+      app.move(EDirection.down);
+      expect(app.board()[12].value).toBe(16);
+      vi.runAllTimers();
+      expect(app.frame()).toBeNull();
+      expect(app.board()).toEqual(app.state$$());
+    } finally {
+      random.mockRestore();
+      vi.useRealTimers();
+    }
+  });
+
   it('skips the slide when reduced motion is requested', () => {
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
     const app = TestBed.createComponent(AppComponent).componentInstance;
@@ -159,6 +248,7 @@ describe('AppComponent', () => {
     vi.unstubAllGlobals();
     expect(app.slides()).toEqual([]);
     expect(app.landing().size).toBe(0);
+    expect(app.frame()).toBeNull();
     expect(app.state$$()[3].value).toBe(4);
   });
 
@@ -394,6 +484,45 @@ describe('AppComponent', () => {
       expect(app.perks$$().doubleMoves).toBe(4);
     });
 
+    it('settles a chain before a tile perk takes aim, so the board shows the tiles it picks from', () => {
+      vi.useFakeTimers();
+      try {
+        const app = TestBed.createComponent(AppComponent).componentInstance;
+        app.state$$.set(board([2, 2, 4, 8, ...Array(12).fill(0)]));
+        give(app, EPerk.hammer);
+        app.move(EDirection.left);
+        expect(app.board()[0].value).toBe(4);
+
+        app.usePerk(EPerk.hammer);
+        expect(app.frame()).toBeNull();
+        expect(app.board()[0].value).toBe(16);
+        expect(app.slides()).toEqual([]);
+        expect(app.landing().size).toBe(0);
+        expect(app.merged().size).toBe(0);
+
+        vi.runAllTimers();
+        expect(app.frame()).toBeNull();
+        expect(app.board()[0].value).toBe(16);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('lets a chain play on when a perk needs no tile', () => {
+      vi.useFakeTimers();
+      try {
+        const app = TestBed.createComponent(AppComponent).componentInstance;
+        app.state$$.set(board([2, 2, 4, 8, ...Array(12).fill(0)]));
+        give(app, EPerk.double);
+        app.move(EDirection.left);
+
+        app.usePerk(EPerk.double);
+        expect(app.frame()).not.toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
     it('hammers the picked tile and spends the perk without using a turn', () => {
       const app = TestBed.createComponent(AppComponent).componentInstance;
       app.state$$.set(board([8, 2, ...Array(14).fill(0)]));
@@ -626,7 +755,6 @@ describe('AppComponent', () => {
     fixture.debugElement.query(By.directive(SwipeDirective)).injector.get(SwipeDirective).swipe.emit(EDirection.left);
     expect(move).toHaveBeenCalledWith(EDirection.left);
     expect(fixture.nativeElement.querySelector('[appSwipe]')).toBeTruthy();
-    expect(fixture.nativeElement.querySelector('app-keyboard')).toBeNull();
   });
 
   it('shows instructions on hover or click and dismisses them with Escape or an outside click', async () => {

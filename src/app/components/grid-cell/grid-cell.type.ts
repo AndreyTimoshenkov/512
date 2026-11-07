@@ -9,6 +9,12 @@ export interface ITileMove {
   value: number;
 }
 
+// One beat of a move: the board once it has played, and the tiles that travel to get there.
+export interface ITileStage {
+  state: IGridCellState[];
+  moves: ITileMove[];
+}
+
 export interface ITileSlide {
   value: number;
   row: number;

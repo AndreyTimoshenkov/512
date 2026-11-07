@@ -32,11 +32,11 @@
 }
 
 :host(.spawned) {
-  animation: spawn 160ms ease-out var(--slide-time) backwards;
+  animation: spawn calc(160ms * var(--pace, 1)) ease-out;
 }
 
 :host(.merged) {
-  animation: merged 180ms ease-out var(--slide-time);
+  animation: merged calc(180ms * var(--pace, 1)) ease-out var(--slide-time);
   z-index: 1;
 }
 

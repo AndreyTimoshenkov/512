@@ -4,7 +4,6 @@ import { colorMatcher } from '../components/grid-cell/grid-cell.helper';
 
 @Directive({
   selector: '[bcgColour]',
-  standalone: true,
   host: {
     '[style.background-color]': 'backgroundColour$$()',
   }

@@ -3,7 +3,6 @@ import { EDirection } from '../interfaces/general.types';
 
 @Directive({
   selector: '[appSwipe]',
-  standalone: true,
   host: {
     '[style.touch-action]': '"none"',
     '[style.user-select]': '"none"',

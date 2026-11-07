@@ -1,7 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, linkedSignal, signal, WritableSignal } from '@angular/core';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
-import { IGridCellState, ITileMove, ITileSlide } from './components/grid-cell/grid-cell.type';
+import { IGridCellState, ITileMove, ITileSlide, ITileStage } from './components/grid-cell/grid-cell.type';
 import { DEFAULT_GRID_SIZE, DEFAULT_TARGET, EDirection } from './interfaces/general.types';
 import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
@@ -79,8 +79,18 @@ export class AppComponent implements AfterViewInit {
   slides = signal<ITileSlide[]>([]);
   // Tiles travelling to a cell are drawn by their slides, so the cell stays empty until they land.
   landing = signal(new Set<number>());
+  // The game moves on at once; while a move plays out, the board shows the stage it has reached.
+  frame = signal<IGridCellState[] | null>(null);
+  board = computed(() => this.frame() ?? this.state$$());
   readonly slideMs = 110;
-  private readonly popMs = 200;
+  readonly popMs = 200;
+  readonly stagePauseMs = 50;
+  // A move with several merge steps plays quicker, so a long chain doesn't hold up the game.
+  readonly chainPace = 0.75;
+  // A slide covers this many cells in slideMs. Longer ones, on bigger boards, take longer rather than go faster.
+  readonly slideCells = 3;
+  pace = signal(1);
+  slideTime = signal(this.slideMs);
   private timers: ReturnType<typeof setTimeout>[] = [];
 
   constructor(
@@ -145,12 +155,9 @@ export class AppComponent implements AfterViewInit {
 
     const previous = this.state$$();
     const next = cloneDeep(previous);
-    const moves: ITileMove[] = [];
     let score = 0;
     for (const row of this.shift.splitArray(next, direction, this.size())) {
-      const before = cloneDeep(row);
       score += this.shift.shiftArray(row, direction)[1];
-      moves.push(...this.shift.traceMoves(before, row));
     }
     if (isEqual(previous, next)) { return; }
 
@@ -164,7 +171,7 @@ export class AppComponent implements AfterViewInit {
     const earned = score * (perksBefore.doubleMoves ? 2 : 1);
     this.score$$.update(value => Math.max(0, value + earned - 1));
     this.spawned.set(new Set());
-    this.animate(moves);
+    this.animate(this.shift.traceStages(previous, direction, this.size()));
     this.generateValues();
     this.turn$$.update(turn => turn + 1);
     this.collectRewards(perksBefore, { ...snapshot, spawn: [...this.spawned()][0] ?? null });
@@ -214,6 +221,8 @@ export class AppComponent implements AfterViewInit {
     } else if (perk === EPerk.shuffle) {
       this.applyPerk(perk, this.perks.shuffle(this.state$$(), this.size()));
     } else if (TILE_PERKS.includes(perk)) {
+      // Picks go by the real board, so a chain still playing out has to finish first.
+      this.clearAnimation();
       this.targetPerk.set(perk);
       this.notice.set({ key: `PERK_${perk}_PICK` });
     }
@@ -312,33 +321,65 @@ export class AppComponent implements AfterViewInit {
     this.notice.set(null);
   }
 
-  private animate(moves: ITileMove[]) {
-    this.timers.forEach(clearTimeout);
-    const landing = new Set(moves.filter(move => move.from !== move.to).map(move => move.to));
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  private animate(stages: ITileStage[]) {
+    this.stopStages();
+    this.pace.set(stages.length > 1 ? this.chainPace : 1);
+    if (stages.length && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      this.playStage(stages, 0);
+      return;
+    }
+    this.merged.set(new Set(stages.flatMap(stage => [...this.mergeTargets(stage.moves)])));
+    this.timers = [setTimeout(() => this.clearPops(), (this.slideMs + this.popMs) * this.pace())];
+  }
 
-    this.merged.set(new Set(moves.map(move => move.to).filter((to, index, all) => all.indexOf(to) !== index)));
-    this.landing.set(reduceMotion ? new Set() : landing);
-    this.slides.set(reduceMotion ? [] : moves.filter(move => landing.has(move.to)).map(move => this.toSlide(move)));
+  // Each stage slides its tiles, lets the merges pop, then holds a moment so the next merge reads as its own step.
+  private playStage(stages: ITileStage[], index: number) {
+    const { state, moves } = stages[index];
+    const last = index === stages.length - 1;
+    const landing = new Set(moves.filter(move => move.from !== move.to).map(move => move.to));
+    const slides = moves.filter(move => landing.has(move.to)).map(move => this.toSlide(move));
+    const longest = Math.max(0, ...slides.map(slide => Math.abs(slide.rows) + Math.abs(slide.columns)));
+    const slideMs = this.slideMs * this.pace() * Math.max(1, longest / this.slideCells);
+    const settledMs = slideMs + this.popMs * this.pace();
+
+    this.slideTime.set(slideMs);
+    this.frame.set(state);
+    this.merged.set(this.mergeTargets(moves));
+    this.landing.set(landing);
+    this.slides.set(slides);
 
     this.timers = [
       setTimeout(() => {
         this.slides.set([]);
         this.landing.set(new Set());
-      }, this.slideMs),
-      setTimeout(() => {
-        this.merged.set(new Set());
-        this.spawned.set(new Set());
-      }, this.slideMs + this.popMs),
+        if (last) { this.frame.set(null); }
+      }, slideMs),
+      setTimeout(() => last ? this.clearPops() : this.merged.set(new Set()), settledMs),
+      ...(last ? [] : [setTimeout(() => this.playStage(stages, index + 1), settledMs + this.stagePauseMs)]),
     ];
   }
 
-  private clearAnimation() {
-    this.timers.forEach(clearTimeout);
-    this.slides.set([]);
-    this.landing.set(new Set());
+  private mergeTargets(moves: ITileMove[]): Set<number> {
+    return new Set(moves.map(move => move.to).filter((to, index, all) => all.indexOf(to) !== index));
+  }
+
+  private clearPops() {
     this.merged.set(new Set());
     this.spawned.set(new Set());
+  }
+
+  private stopStages() {
+    this.timers.forEach(clearTimeout);
+    this.pace.set(1);
+    this.slideTime.set(this.slideMs);
+    this.frame.set(null);
+    this.slides.set([]);
+    this.landing.set(new Set());
+  }
+
+  private clearAnimation() {
+    this.stopStages();
+    this.clearPops();
   }
 
   private toSlide({ from, to, value }: ITileMove): ITileSlide {

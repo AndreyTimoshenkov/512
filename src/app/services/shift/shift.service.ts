@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { IGridCellState, ITileMove } from '../../components/grid-cell/grid-cell.type';
+import { cloneDeep, sortBy } from 'lodash';
+import { IGridCellState, ITileMove, ITileStage } from '../../components/grid-cell/grid-cell.type';
 import { DEFAULT_GRID_SIZE, EDirection } from '../../interfaces/general.types';
 
 @Injectable({
@@ -28,12 +29,40 @@ export class ShiftService {
 
   // Each pass moves a tile one cell, so crossing the line takes one pass fewer than its length.
   shiftArray(list: IGridCellState[], direction: EDirection): [IGridCellState[], number] {
-    const forward = direction === EDirection.right || direction === EDirection.down;
     let result: [IGridCellState[], number] = [list, 0];
     for (let pass = 1; pass < list.length; pass++) {
-      result = forward ? this.shiftRight(...result) : this.shiftLeft(...result);
+      result = this.shiftOnce(result[0], direction, result[1]);
     }
     return result;
+  }
+
+  private shiftOnce(list: IGridCellState[], direction: EDirection, score: number = 0): [IGridCellState[], number] {
+    const forward = direction === EDirection.right || direction === EDirection.down;
+    return forward ? this.shiftRight(list, score) : this.shiftLeft(list, score);
+  }
+
+  // Lines play side by side, each pausing only for its own merges, so a line with no merges slides in one go.
+  traceStages(state: IGridCellState[], direction: EDirection, size: number = DEFAULT_GRID_SIZE): ITileStage[] {
+    const lines = this.splitArray(state, direction, size).map(line => this.lineStages(line, direction));
+    const count = Math.max(...lines.map(stages => stages.length)) - 1;
+    return Array.from({ length: count }, (_, stage) => ({
+      state: sortBy(lines.flatMap(stages => stages[Math.min(stage + 1, stages.length - 1)]), 'key'),
+      moves: lines.flatMap(stages => stages[stage + 1] ? this.traceMoves(stages[stage], stages[stage + 1]) : []),
+    }));
+  }
+
+  // The line as it starts and after each merge. Slides after the last merge have nothing to wait for, so they join it.
+  private lineStages(line: IGridCellState[], direction: EDirection): IGridCellState[][] {
+    const tileCount = (cells: IGridCellState[]) => cells.filter(cell => cell.value).length;
+    const current = cloneDeep(line);
+    const stages = [cloneDeep(line)];
+    for (let pass = 1; pass < line.length; pass++) {
+      const tiles = tileCount(current);
+      this.shiftOnce(current, direction);
+      if (tileCount(current) < tiles) { stages.push(cloneDeep(current)); }
+    }
+    stages[Math.max(stages.length - 1, 1)] = cloneDeep(current);
+    return stages;
   }
 
   // Tiles keep their order when sliding, so the old tiles fill the landed ones in turn until the values add up.

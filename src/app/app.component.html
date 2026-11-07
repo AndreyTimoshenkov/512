@@ -28,11 +28,11 @@
 
   <div class="board-space">
     <div class="board">
-      <grid-container class="game" [style.--grid-size]="size()" [style.--slide-time]="slideMs + 'ms'">
-        @for(cell of state$$(); track $index;) {
-          <grid-cell bcgColour [bcg]="landing().has(cell.key) ? 0 : cell.value" [cellKey]="cell.key"
+      <grid-container class="game" [style.--grid-size]="size()" [style.--slide-time]="slideTime() + 'ms'" [style.--pace]="pace()">
+        @for(cell of board(); track $index;) {
+          <grid-cell bcgColour [bcg]="landing().has(cell.key) ? 0 : cell.value"
             [value]="landing().has(cell.key) ? 0 : cell.value"
-            [class.spawned]="spawned().has(cell.key)" [class.merged]="merged().has(cell.key)"
+            [class.spawned]="spawned().has(cell.key) && !frame()" [class.merged]="merged().has(cell.key)"
             [class.pickable]="pickable().has(cell.key)" [class.picked]="swapFirst() === cell.key" [attr.data-key]="cell.key"
             [attr.role]="pickable().has(cell.key) ? 'button' : null" [attr.tabindex]="pickable().has(cell.key) ? 0 : null"
             (keydown.enter)="pickTile(cell.key)" (keydown.space)="pickTile(cell.key)"></grid-cell>
@@ -44,7 +44,7 @@
         }
       </grid-container>
 
-      @if (isLost() && !targetPerk()) {
+      @if (isLost() && !targetPerk() && !frame()) {
         <app-game-panel [heading]="'GAME_OVER' | translate" [modal]="!canRescue()"
           [message]="('SCORE' | translate) + ': ' + score$$() + (canRescue() ? '. ' + ('PERK_RESCUE' | translate) : '')">
           <app-game-setup [(target)]="setupTarget" [(size)]="setupSize"></app-game-setup>
@@ -59,7 +59,7 @@
           <button class="block-button block-button--quiet" type="button" (click)="closePanels()">{{ 'KEEP_PLAYING' | translate }}</button>
           <button class="block-button" type="button" (click)="startNewGame()">{{ 'NEW_GAME' | translate }}</button>
         </app-game-panel>
-      } @else if (wonOpen()) {
+      } @else if (wonOpen() && !frame()) {
         <app-game-panel [heading]="'WIN' | translate: { target: target$$() }" [message]="('SCORE' | translate) + ': ' + score$$()">
           <button class="block-button" type="button" (click)="closePanels()">{{ 'KEEP_PLAYING' | translate }}</button>
           <button class="block-button block-button--quiet" type="button" (click)="restartGame()">{{ 'NEW_GAME' | translate }}</button>

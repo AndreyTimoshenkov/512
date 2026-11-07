@@ -22,6 +22,20 @@ describe('GridCellComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('shows its value and marks itself as a tile', () => {
+    fixture.componentRef.setInput('value', 128);
+    fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement;
+    expect(host.textContent).toContain('128');
+    expect(host.classList.contains('has-value')).toBe(true);
+    expect(host.dataset['digits']).toBe('3');
+
+    fixture.componentRef.setInput('value', 0);
+    fixture.detectChanges();
+    expect(host.textContent?.trim()).toBe('');
+    expect(host.classList.contains('has-value')).toBe(false);
+  });
+
   it('lays out exactly as many pips as the tile is worth', () => {
     expect(pipGrid(0)).toEqual([1, 1]);
     expect(pipGrid(2)).toEqual([2, 1]);
