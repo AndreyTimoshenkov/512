@@ -7,7 +7,7 @@ import { isDirection } from './helpers/event.helpers';
 import { LocalStorageService } from './services/local-storage/local-storage.service';
 import { ShiftService } from './services/shift/shift.service';
 import { GameService } from './services/game/game.service';
-import { cloneDeep, isEqual, omit } from 'lodash';
+import { cloneDeep, isEqual, omit, sumBy } from 'lodash';
 import { SwipeDirective } from './directives/swipe.directive';
 import { ColourDirective } from './directives/colour.directive';
 import { LocaleSwitcherComponent } from './components/locale-switcher/locale-switcher.component';
@@ -286,7 +286,9 @@ export class AppComponent implements AfterViewInit {
     this.perks$$.update(perks => this.spent(perks, perk));
     this.notice.set(null);
     // Tiles that travelled are only somewhere else; the others that left the board are gone for good.
-    this.playEffect(perk, cell, moves.length ? [] : previous.filter((tile, index) => tile.value && !next[index].value));
+    const removed = moves.length ? [] : previous.filter((tile, index) => tile.value && !next[index].value);
+    this.score$$.update(score => score + sumBy(removed, 'value'));
+    this.playEffect(perk, cell, removed);
   }
 
   private playEffect(effect: TPerkEffect, cell?: number, removed: IGridCellState[] = []) {

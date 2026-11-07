@@ -876,6 +876,40 @@ describe('AppComponent', () => {
       expect(app.targetPerk()).toBeNull();
     });
 
+    it('adds the value of a hammered tile to the score', () => {
+      const app = TestBed.createComponent(AppComponent).componentInstance;
+      app.state$$.set(board([8, 2, ...Array(14).fill(0)]));
+      app.score$$.set(10);
+      give(app, EPerk.hammer);
+      app.usePerk(EPerk.hammer);
+      app.pickTile(0);
+      expect(app.score$$()).toBe(18);
+    });
+
+    it('adds every swept tile to the score, without doubling it', () => {
+      const app = TestBed.createComponent(AppComponent).componentInstance;
+      app.state$$.set(board([2, 4, 8, 2, ...Array(12).fill(0)]));
+      app.score$$.set(10);
+      app.perks$$.update(perks => ({ ...perks, doubleMoves: 3 }));
+      give(app, EPerk.sweep);
+      app.usePerk(EPerk.sweep);
+      expect(app.score$$()).toBe(18);
+    });
+
+    it.each([
+      [EPerk.shuffle, (app: AppComponent) => app.usePerk(EPerk.shuffle)],
+      [EPerk.swap, (app: AppComponent) => { app.usePerk(EPerk.swap); app.pickTile(0); app.pickTile(1); }],
+      [EPerk.upgrade, (app: AppComponent) => { app.usePerk(EPerk.upgrade); app.pickTile(1); }],
+    ])('scores nothing for %s, which removes no tiles', (perk, use) => {
+      const app = TestBed.createComponent(AppComponent).componentInstance;
+      app.state$$.set(board([8, 2, ...Array(14).fill(0)]));
+      app.score$$.set(10);
+      give(app, perk);
+      use(app);
+      expect(app.perks$$().inventory[perk]).toBe(0);
+      expect(app.score$$()).toBe(10);
+    });
+
     it('swaps in two picks and can be cancelled without spending it', () => {
       const app = TestBed.createComponent(AppComponent).componentInstance;
       app.state$$.set(board([2, 4, ...Array(14).fill(0)]));
