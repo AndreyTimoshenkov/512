@@ -14,6 +14,17 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 Run `npm run build` to build the project. Generated artifacts are stored in the ignored `docs/` directory.
 
+## Yandex Games build
+
+Run `npm run build:yandex` to create a separate production package in `dist/yandex/browser/`.
+Upload the contents of that directory as a ZIP with `index.html` at the archive root to the Yandex Games developer console. The build uses relative asset URLs and does not require a Node server.
+
+Only this build includes the Yandex adapter and loads `/sdk.js`, which the Yandex hosting environment supplies. Standard web and GitHub Pages builds use the default platform adapter with no SDK requests or ads. For local testing, the game continues without ads if the SDK cannot load; use the Yandex console draft/debug preview to verify real SDK behavior.
+
+The game calls Game Ready after rendering, reports gameplay start/stop around panels and pauses, and requests a fullscreen interstitial when the player confirms a new game. Input is blocked until the ad closes or reports an error/offline/unavailable result. No ads are requested on initial load or during a move. Enable monetisation in the Yandex developer console; the platform controls ad availability and frequency. Rewarded ads and purchases are not enabled.
+
+Platform capabilities live in `src/app/platform/game-platform.ts`. Each portal gets its own adapter and build configuration replacing `platform.providers.ts`; game components depend on the shared interface rather than portal SDK APIs.
+
 ## Running unit tests
 
 Run `npm test -- --watch=false` to execute the unit tests with Vitest.

@@ -9,7 +9,8 @@
     "deploy": "npx angular-cli-ghpages --dir=docs/browser",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:slidekick": "node docs/server/server.mjs"
+    "serve:ssr:slidekick": "node docs/server/server.mjs",
+    "build:yandex": "ng build --configuration production,yandex"
   },
   "private": true,
   "dependencies": {

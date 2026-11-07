@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, linkedSignal, signal, WritableSignal } from '@angular/core';
+import { afterNextRender, AfterViewInit, ChangeDetectionStrategy, Component, computed, effect, HostListener, inject, linkedSignal, signal, WritableSignal } from '@angular/core';
 import { GridContainerComponent } from './components/grid-container/grid-container.component';
 import { GridCellComponent } from './components/grid-cell/grid-cell.component';
 import { IGridCellState, ITileExit, ITileMove, ITileSlide, ITileStage } from './components/grid-cell/grid-cell.type';
@@ -22,6 +22,7 @@ import { PerkTrayComponent } from './components/perk-tray/perk-tray.component';
 import { RescuePerksComponent } from './components/rescue-perks/rescue-perks.component';
 import { PerksService } from './services/perks/perks.service';
 import { DOUBLE_MOVES, EPerk, IPerkEffect, IPerkHint, IPerkState, PERKS, TILE_PERKS, TPerkEffect } from './interfaces/perk.types';
+import { GAME_PLATFORM } from './platform/game-platform';
 @Component({
     selector: 'app-root',
     imports: [
@@ -45,6 +46,8 @@ import { DOUBLE_MOVES, EPerk, IPerkEffect, IPerkHint, IPerkState, PERKS, TILE_PE
 })
 export class AppComponent implements AfterViewInit {
   private perks = inject(PerksService);
+  readonly platform = inject(GAME_PLATFORM);
+  readonly startingNewGame = signal(false);
   readonly sweep = EPerk.sweep;
   state$$: WritableSignal<Array<IGridCellState>> = signal([]);
   turn$$: WritableSignal<number> = signal(1);
@@ -131,6 +134,12 @@ export class AppComponent implements AfterViewInit {
       this.ls.saveTarget(this.target$$());
       this.ls.savePerks(this.perks$$());
     });
+    effect(() => {
+      this.platform.setGameplay(this.state$$().length > 0 && !this.panelOpen() && !this.startingNewGame());
+    });
+    afterNextRender(() => {
+      void this.platform.initialize().then(() => this.platform.ready());
+    });
     this.translate.setDefaultLang('en');
   }
 
@@ -158,6 +167,7 @@ export class AppComponent implements AfterViewInit {
 
   @HostListener('window:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent) {
+    if (this.platform.paused() || this.startingNewGame()) { return; }
     if (event.key === 'Escape') {
       this.instructionsOpen.set(false);
       this.finishIntro();
@@ -175,7 +185,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   move(direction: EDirection) {
-    if (this.panelOpen()) { return; }
+    if (this.panelOpen() || this.platform.paused() || this.startingNewGame()) { return; }
 
     const previous = this.state$$();
     const next = cloneDeep(previous);
@@ -224,6 +234,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   usePerk(perk: EPerk) {
+    if (this.platform.paused() || this.startingNewGame()) { return; }
     if (this.targetPerk() === perk) {
       this.cancelTarget();
       return;
@@ -309,6 +320,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   loadSave() {
+    if (this.platform.paused() || this.startingNewGame()) { return; }
     const save = this.perks$$().save;
     if (!save) { return; }
 
@@ -351,6 +363,7 @@ export class AppComponent implements AfterViewInit {
   }
 
   pickTile(key: number) {
+    if (this.platform.paused() || this.startingNewGame()) { return; }
     const perk = this.targetPerk();
     if (!perk || !this.pickable().has(key)) { return; }
 
@@ -498,12 +511,26 @@ export class AppComponent implements AfterViewInit {
   }
 
   restartGame() {
+    if (this.platform.paused() || this.startingNewGame()) { return; }
     this.cancelTarget();
     this.wonOpen.set(false);
     this.confirmOpen.set(true);
   }
 
-  startNewGame() {
+  async startNewGame() {
+    if (this.startingNewGame() || this.platform.paused()) { return; }
+    // Keep the existing board until the ad closes, including unavailable-ad callbacks.
+    this.startingNewGame.set(true);
+    try {
+      const ad = this.platform.showInterstitial();
+      if (ad) { await ad; }
+      this.resetGame();
+    } finally {
+      this.startingNewGame.set(false);
+    }
+  }
+
+  private resetGame() {
     const target = this.setupTarget();
     const size = this.setupSize();
     this.closePanels();

@@ -1,3 +1,5 @@
+import { signal } from '@angular/core';
+import { GAME_PLATFORM, GamePlatform } from './platform/game-platform';
 import { vi, type Mocked } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -34,6 +36,34 @@ describe('AppComponent', () => {
       imports: [AppComponent, TranslateModule.forRoot()],
       providers: [{ provide: LocalStorageService, useValue: storage }],
     }).compileComponents();
+  });
+
+  it('keeps the board and blocks moves until the interstitial finishes', async () => {
+    let closeAd!: () => void;
+    const platform: GamePlatform = {
+      paused: signal(false),
+      initialize: () => Promise.resolve(),
+      ready: vi.fn(),
+      setGameplay: vi.fn(),
+      showInterstitial: vi.fn(() => new Promise<void>(resolve => { closeAd = resolve; })),
+    };
+    TestBed.overrideProvider(GAME_PLATFORM, { useValue: platform });
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const app = fixture.componentInstance;
+    const previous = app.state$$();
+    const restart = app.startNewGame();
+    await app.startNewGame();
+    app.move(EDirection.right);
+    expect(app.state$$()).toBe(previous);
+    expect(app.startingNewGame()).toBe(true);
+    expect(platform.showInterstitial).toHaveBeenCalledTimes(1);
+    closeAd();
+    await restart;
+    expect(app.state$$()).not.toBe(previous);
+    expect(app.startingNewGame()).toBe(false);
+    expect(app.turn$$()).toBe(1);
   });
 
   it('starts a new game with sixteen cells and two initial tiles', async () => {

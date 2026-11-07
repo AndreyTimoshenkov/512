@@ -1,4 +1,4 @@
-<main class="play-area" appSwipe (swipe)="move($event)" (tap)="onTap($event)">
+<main [attr.inert]="platform.paused() || startingNewGame() ? '' : null" class="play-area" appSwipe (swipe)="move($event)" (tap)="onTap($event)">
   <h1 class="wordmark">Slidekick</h1>
 
   <div class="tools" [attr.inert]="panelOpen() ? '' : null">

@@ -85,6 +85,23 @@
                 "zone.js",
                 "zone.js/testing"
               ]
+            },
+            "yandex": {
+              "outputPath": "dist/yandex",
+              "baseHref": "./",
+              "server": false,
+              "ssr": false,
+              "prerender": false,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                },
+                {
+                  "replace": "src/app/platform/platform.providers.ts",
+                  "with": "src/app/platform/platform.providers.yandex.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
