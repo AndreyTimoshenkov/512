@@ -1,4 +1,4 @@
-# 512
+# Slidekick
 
 An Angular 22 game. Use `nvm use` to select the Node version in `.nvmrc`, then install dependencies with `npm ci`.
 

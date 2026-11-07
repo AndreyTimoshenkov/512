@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "512": {
+    "slidekick": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -93,10 +93,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "512:build:production"
+              "buildTarget": "slidekick:build:production"
             },
             "development": {
-              "buildTarget": "512:build:development"
+              "buildTarget": "slidekick:build:development"
             }
           },
           "defaultConfiguration": "development"

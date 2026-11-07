@@ -2,7 +2,7 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "512",
+      "name": "slidekick",
       "runtimeExecutable": "zsh",
       "runtimeArgs": ["-c", "source ~/.nvm/nvm.sh && nvm use >/dev/null && npx ng serve --port 4200"],
       "port": 4200
